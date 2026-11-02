@@ -367,24 +367,6 @@ TILES = {
 ###.###.
 ########
 ########""",
- "check_off": """
-...#....
-...#....
-...#....
-...#....
-...###..
-...##...
-...#....
-..###...""",
- "check_on": """
-...####.
-...###..
-...##...
-...#....
-...#....
-...#....
-...#....
-..###...""",
 }
 
 
@@ -459,176 +441,196 @@ with open(os.path.join(OUT, "sprites.h"), "w") as f:
     f.write(sprite("tileSprite", [to_bytes(rows(TILES[t])) for t in tile_order]))
 
 # ================================================================ levels
+# Levels are built on the Arduboy from the level number: each level is 16
+# chunks of 8 columns. Chunk 0 is the start, chunks 14-15 are the staircase and
+# flag, and chunks 1-13 are picked from the pieces below. Harder pieces unlock
+# as the level number goes up (see PipQuest.ino, chunkFor()).
+#
 # Legend:  .  sky          #  ground       B  brick (big Pip breaks it)
 #          ?  coin block   M  power block (berry, or flower if already big)
 #          W  wing block   (berry, or feather if already big)
 #          P  pipe (always 2 wide)         o  coin      s  spikes
-#          e  blob         t  snail (stomp it for a kickable shell)
-#          k  spiky (can't be stomped)     K  checkpoint flag
-#          S  player start F  goal flag pole
-# Row 0 sits under the score bar, so keep it empty.
-W, H = 128, 8
+#          e  enemy (blob, or a snail/spiky on later levels)
+#          t  snail (stomp it for a kickable shell)    k  spiky (can't be stomped)
+#
+# Each piece is rows 1-7 (row 0 sits under the score bar and stays empty).
+# Every piece must have ground at its first and last column, so any two
+# pieces can be joined. Themes: H hills, C cave (gets a brick ceiling on
+# row 1, so pieces must leave rows 1-2 free), S sky.
+PIECES = [
+ # (themes, difficulty 0-3, rows 1..7)
+ ("HC", 0, ["........",
+            "........",
+            "........",
+            "........",
+            "....e...",
+            "########",
+            "########"]),
+ ("HC", 0, ["........",
+            "........",
+            ".?BMB?..",
+            "........",
+            "........",
+            "########",
+            "########"]),
+ ("HC", 0, ["........",
+            "........",
+            "..oooo..",
+            "........",
+            "........",
+            "###..###",
+            "###..###"]),
+ ("HC", 0, ["........",
+            "........",
+            "........",
+            "...PP...",
+            "...PP.e.",
+            "########",
+            "########"]),
+ ("HC", 0, ["........",
+            "........",
+            "........",
+            "...##...",
+            "..####..",
+            "########",
+            "########"]),
+ ("HS", 1, ["........",
+            "........",
+            "..?W?...",
+            "........",
+            "........",
+            "########",
+            "########"]),
+ ("H", 1,  ["........",
+            "........",
+            "...PP...",
+            "...PP...",
+            "...PP...",
+            "########",
+            "########"]),
+ ("HC", 1, ["........",
+            "........",
+            "..ooo...",
+            "........",
+            "........",
+            "##...###",
+            "##...###"]),
+ ("H", 1,  ["........",
+            "........",
+            "...##...",
+            "..####..",
+            ".######.",
+            "########",
+            "########"]),
+ ("HC", 1, ["........",
+            "..oooo..",
+            ".BBBBBB.",
+            "........",
+            "...t....",
+            "########",
+            "########"]),
+ ("HC", 1, ["........",
+            "........",
+            "........",
+            "........",
+            "..t...e.",
+            "########",
+            "########"]),
+ ("HC", 2, ["........",
+            "........",
+            "...oo...",
+            "........",
+            "...ss...",
+            "########",
+            "########"]),
+ ("HC", 2, ["........",
+            "........",
+            "........",
+            "..BBBB..",
+            "........",
+            "##....##",
+            "##....##"]),
+ ("HC", 2, ["........",
+            "........",
+            "...?....",
+            "........",
+            "..k..e..",
+            "########",
+            "########"]),
+ ("H", 3,  ["........",
+            "........",
+            "........",
+            "PP....PP",
+            "PP.ss.PP",
+            "########",
+            "########"]),
+ ("HC", 3, ["........",
+            "........",
+            "..BBBB..",
+            "........",
+            ".e.e.t..",
+            "########",
+            "########"]),
+ ("HC", 3, ["........",
+            "........",
+            "...oo...",
+            "...##...",
+            "........",
+            "#......#",
+            "#......#"]),
+ ("S", 0,  ["........",
+            "........",
+            "........",
+            "...oo...",
+            "...##...",
+            "##....##",
+            "##....##"]),
+ ("S", 0,  ["........",
+            ".....oo.",
+            ".....##.",
+            "..##....",
+            "........",
+            "#......#",
+            "#......#"]),
+ ("S", 2,  ["........",
+            "........",
+            "...e....",
+            "..####..",
+            "........",
+            "#......#",
+            "#......#"]),
+ ("S", 3,  ["........",
+            "........",
+            "........",
+            ".....k..",
+            ".##..##.",
+            "#......#",
+            "#......#"]),
+]
 
+for themes, d, rows in PIECES:
+    assert len(rows) == 7 and all(len(r) == 8 for r in rows), rows
+    assert rows[5][0] == "#" and rows[5][7] == "#" or rows[3][0] == "P", rows
+    if "C" in themes:
+        assert rows[0] == "........", rows
 
-def new_level():
-    return [["."] * W for _ in range(H)]
-
-
-def put(g, x, y, c):
-    g[y][x] = c
-
-
-def ground(g, x0, x1):
-    for x in range(x0, x1 + 1):
-        g[6][x] = "#"
-        g[7][x] = "#"
-
-
-def column(g, x, height, c="#"):  # stacks on top of the ground (row 5 upward)
-    for i in range(height):
-        g[5 - i][x] = c
-
-
-def pipe(g, x, height):
-    column(g, x, height, "P")
-    column(g, x + 1, height, "P")
-
-
-def hrow(g, x0, x1, y, c):
-    for x in range(x0, x1 + 1):
-        g[y][x] = c
-
-
-def stairs_and_flag(g, x):
-    for i in range(5):
-        column(g, x + i, i + 1)
-    column(g, x + 5, 5)
-    for y in range(1, 6):
-        g[y][x + 11] = "F"
-
-
-# ---- Level 1: Green Hills (learn the berry and shells)
-L1 = new_level()
-ground(L1, 0, 43); ground(L1, 46, 71); ground(L1, 75, 81); ground(L1, 84, 127)
-put(L1, 2, 5, "S")
-put(L1, 7, 3, "?")
-hrow(L1, 11, 15, 3, "B"); put(L1, 12, 3, "M"); put(L1, 14, 3, "?")
-put(L1, 18, 5, "e")
-pipe(L1, 22, 2)
-put(L1, 27, 5, "e")
-pipe(L1, 31, 3)
-put(L1, 36, 5, "t")
-put(L1, 40, 5, "e")
-hrow(L1, 43, 46, 3, "o")
-hrow(L1, 50, 57, 3, "B"); put(L1, 53, 3, "?"); put(L1, 56, 3, "M")
-hrow(L1, 51, 55, 2, "o")
-put(L1, 52, 2, "e")
-put(L1, 61, 5, "K")
-put(L1, 65, 5, "t"); put(L1, 68, 5, "e"); put(L1, 70, 5, "e")
-hrow(L1, 72, 74, 2, "o")
-for i, h in enumerate([1, 2, 3, 3]):
-    column(L1, 78 + i, h)
-for i, h in enumerate([3, 2, 1]):
-    column(L1, 84 + i, h)
-hrow(L1, 89, 95, 4, "o")
-put(L1, 91, 2, "?"); put(L1, 93, 2, "?")
-put(L1, 97, 5, "e"); put(L1, 99, 5, "t")
-pipe(L1, 104, 2)
-stairs_and_flag(L1, 110)
-
-# ---- Level 2: Spike Hills (spark flower, spikies)
-L2 = new_level()
-ground(L2, 0, 15); ground(L2, 19, 30); ground(L2, 34, 36); ground(L2, 40, 58)
-ground(L2, 62, 75); ground(L2, 80, 127)
-put(L2, 2, 5, "S")
-put(L2, 7, 3, "?"); put(L2, 8, 3, "M"); put(L2, 9, 3, "?")
-put(L2, 13, 5, "e")
-hrow(L2, 15, 19, 2, "o")
-put(L2, 22, 5, "s"); put(L2, 23, 5, "s")
-put(L2, 26, 5, "k"); put(L2, 29, 5, "e")
-hrow(L2, 31, 33, 3, "B")
-hrow(L2, 37, 39, 3, "B"); put(L2, 38, 3, "M"); put(L2, 38, 2, "o")
-pipe(L2, 43, 2)
-put(L2, 47, 5, "s"); put(L2, 48, 5, "s"); put(L2, 49, 5, "s")
-pipe(L2, 51, 2)
-put(L2, 55, 5, "t"); put(L2, 57, 5, "k")
-hrow(L2, 59, 61, 3, "o")
-put(L2, 64, 5, "K")
-hrow(L2, 66, 72, 3, "B"); put(L2, 67, 3, "?"); put(L2, 69, 3, "M")
-hrow(L2, 66, 71, 2, "o"); put(L2, 70, 2, "e")
-put(L2, 73, 5, "k")
-hrow(L2, 76, 79, 4, "B")
-hrow(L2, 76, 79, 3, "o")
-put(L2, 84, 5, "s"); put(L2, 85, 5, "s")
-put(L2, 88, 5, "k"); put(L2, 90, 5, "t"); put(L2, 92, 5, "e")
-pipe(L2, 95, 3)
-hrow(L2, 99, 104, 5, "s")
-hrow(L2, 99, 104, 3, "B"); hrow(L2, 99, 104, 2, "o")
-stairs_and_flag(L2, 108)
-put(L2, 117, 5, "k")
-
-# ---- Level 3: Brick Cave (a ceiling, shells to kick, brick pockets)
-L3 = new_level()
-hrow(L3, 0, 100, 1, "B")
-ground(L3, 0, 33); ground(L3, 37, 61); ground(L3, 65, 95); ground(L3, 99, 127)
-put(L3, 2, 5, "S")
-put(L3, 9, 5, "e"); put(L3, 12, 5, "e")
-hrow(L3, 15, 18, 3, "B"); put(L3, 16, 3, "M"); put(L3, 17, 3, "?")
-pipe(L3, 22, 1)
-put(L3, 26, 5, "t"); put(L3, 29, 5, "e"); put(L3, 31, 5, "e")
-hrow(L3, 34, 36, 3, "o")
-hrow(L3, 40, 46, 3, "B"); hrow(L3, 41, 45, 4, "o"); hrow(L3, 41, 45, 5, "o")
-put(L3, 50, 5, "k")
-pipe(L3, 53, 2)
-put(L3, 58, 5, "K")
-hrow(L3, 62, 64, 5, "B")                       # brick bridge over a pit
-put(L3, 68, 5, "t"); put(L3, 71, 5, "e"); put(L3, 73, 5, "e"); put(L3, 75, 5, "e")
-hrow(L3, 78, 81, 3, "?"); put(L3, 79, 3, "M")
-put(L3, 85, 5, "k"); put(L3, 88, 5, "t")
-pipe(L3, 91, 1)
-hrow(L3, 96, 98, 3, "o")
-stairs_and_flag(L3, 104)
-
-# ---- Level 4: Sky Road (the feather lets you fly over everything)
-L4 = new_level()
-ground(L4, 0, 12); ground(L4, 46, 55); ground(L4, 86, 96); ground(L4, 109, 127)
-put(L4, 2, 5, "S")
-put(L4, 6, 3, "W"); put(L4, 9, 3, "W")
-hrow(L4, 16, 21, 5, "#"); put(L4, 19, 4, "e")
-hrow(L4, 25, 28, 4, "#"); put(L4, 27, 3, "e")
-hrow(L4, 32, 35, 3, "#"); hrow(L4, 32, 35, 2, "o")
-hrow(L4, 39, 42, 5, "#"); put(L4, 41, 4, "k")
-put(L4, 48, 5, "K"); put(L4, 52, 5, "t")
-hrow(L4, 59, 61, 4, "#")
-hrow(L4, 65, 67, 3, "#"); hrow(L4, 65, 67, 2, "o")
-hrow(L4, 71, 73, 4, "#"); put(L4, 72, 3, "e")
-hrow(L4, 77, 79, 5, "#")
-hrow(L4, 75, 85, 1, "o")                       # coin trail for flyers
-hrow(L4, 82, 83, 4, "#")
-put(L4, 89, 3, "?"); put(L4, 90, 3, "W"); put(L4, 91, 3, "?")
-put(L4, 92, 5, "e"); put(L4, 94, 5, "k")
-hrow(L4, 99, 101, 4, "#")
-hrow(L4, 104, 106, 3, "#"); put(L4, 105, 2, "e")
-stairs_and_flag(L4, 111)
-
-LEVELS = [L1, L2, L3, L4]
-NAMES = ["GREEN HILLS", "SPIKE HILLS", "BRICK CAVE", "SKY ROAD"]
-
+THEME_BITS = {"H": 1, "C": 2, "S": 4}
 with open(os.path.join(OUT, "levels.h"), "w") as f:
-    f.write("// Generated by tools/gen_assets.py - you can also edit these strings directly.\n")
-    f.write("// Each row must be exactly LEVEL_W characters. See tools/gen_assets.py for the legend.\n")
+    f.write("// Generated by tools/gen_assets.py - edit the pieces there and re-run it.\n")
     f.write("#pragma once\n\n")
-    f.write("#define LEVEL_W %d\n#define LEVEL_H %d\n#define NUM_LEVELS %d\n\n" % (W, H, len(LEVELS)))
-    f.write("const char levels[NUM_LEVELS][LEVEL_H][LEVEL_W + 1] PROGMEM = {\n")
-    for n, g in enumerate(LEVELS):
-        f.write("  { // Level %d: %s\n" % (n + 1, NAMES[n]))
-        for r in g:
-            f.write('    "%s",\n' % "".join(r))
-        f.write("  },\n")
+    f.write("#define LEVEL_W 128\n#define LEVEL_H 8\n#define NUM_LEVELS 128\n")
+    f.write("#define NUM_PIECES %d\n" % len(PIECES))
+    def find(theme, marker):
+        return next(i for i, (th, d, rows) in enumerate(PIECES)
+                    if theme in th and any(marker in r for r in rows))
+    f.write("#define PIECE_POWER %d   // ? block row with an M block\n" % find("H", "?BMB?"))
+    f.write("#define PIECE_WING %d    // ? block row with a W block\n" % find("S", "?W?"))
+    f.write("#define PIECE_SKY_EASY %d\n\n" % next(i for i, (th, d, r) in enumerate(PIECES) if th == "S" and d == 0))
+    f.write("// low 3 bits: themes (1 hills, 2 cave, 4 sky); high nibble: difficulty\n")
+    f.write("const uint8_t pieceInfo[NUM_PIECES] PROGMEM = {\n  ")
+    f.write(", ".join("0x%02X" % (sum(THEME_BITS[t] for t in th) | (d << 4)) for th, d, _ in PIECES))
+    f.write("\n};\n\n")
+    f.write("const char pieces[NUM_PIECES][7][8] PROGMEM = {\n")
+    for th, d, rows in PIECES:
+        f.write("  { %s },\n" % ", ".join("{%s}" % ",".join("'%s'" % c for c in r) for r in rows))
     f.write("};\n")
-
-if __name__ == "__main__":
-    for n, g in enumerate(LEVELS):
-        print("Level", n + 1, NAMES[n])
-        for r in g:
-            print("".join(r))

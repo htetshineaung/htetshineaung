@@ -1,8 +1,8 @@
 # Pip Quest (Arduboy)
 
 An original side-scrolling platformer for the [Arduboy](https://arduboy.com).
-Guide Pip through 4 worlds: stomp enemies, kick shells, bump `?` blocks for
-coins and power-ups, smash bricks, and touch the flag pole to win.
+Guide Pip through **128 levels**: stomp enemies, kick shells, bump `?` blocks
+for coins and power-ups, smash bricks, and touch the flag pole to win.
 
 ## Controls
 | Button | Action |
@@ -10,6 +10,7 @@ coins and power-ups, smash bricks, and touch the flag pole to win.
 | Left / Right | Move |
 | A | Jump (tap for a small jump, hold for a high jump) |
 | B | Run, plus your power-up's move (below) |
+| Up / Down on title screen | Pick the starting level (up to the furthest you reached) |
 | B on title screen | Sound on/off |
 
 ## Power-ups
@@ -22,8 +23,18 @@ Some `?` blocks hold a power-up instead of a coin.
 | **Feather** (when big) | Fly, with a flight meter on the score bar | Hold to fly, and hold A while falling to glide |
 
 If you get hit while powered up, you shrink back to small Pip instead of
-losing a life. Lives are **infinite**: when you die, you restart at the last
-checkpoint flag you touched.
+losing a life.
+
+## Lives
+You start with **5 lives** and get an extra life for every 100 coins. After a
+**Game Over**, press A to continue from the same level (score and lives reset)
+or B to go back to the title. The Arduboy saves the furthest level you reached
+and your high score.
+
+## Levels
+The 128 levels are built from the level number, out of 8-column pieces in
+`tools/gen_assets.py`. The themes rotate (Hills, Hills, Cave, Sky), and
+harder pieces and tougher enemies appear as the level number goes up.
 
 ## Enemies
 - **Blob**: stomp it.
@@ -49,8 +60,7 @@ arduino-cli compile --fqbn arduino:avr:leonardo PipQuest
 arduino-cli upload  --fqbn arduino:avr:leonardo -p /dev/ttyACM0 PipQuest
 ```
 
-## Make your own levels
-The levels are text in `levels.h`, one character per 8x8 tile, 8 rows of 128.
-The full legend is in `tools/gen_assets.py`. Edit `levels.h` directly, or edit
-the generator, which builds the levels and the pixel-art sprites, and then run
-`python3 tools/gen_assets.py`.
+## Make your own level pieces
+Edit the `PIECES` list in `tools/gen_assets.py` (one character per 8x8 tile,
+the legend is at the top of the list), then run `python3 tools/gen_assets.py`
+to regenerate `levels.h` and `sprites.h`.

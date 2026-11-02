@@ -7,12 +7,15 @@
 //                             Spark Flower: B shoots bouncing sparks
 //                             Feather:      hold B to fly, hold A to glide
 //  Title:     B toggles sound
+//  Title:     UP / DOWN picks the starting level (up to the furthest reached)
 //
 //  Power-ups come out of ? blocks that hold an item:
 //    Berry   - Pip grows big, can break bricks and survive one hit
 //    Flower  - (when big) shoot sparks with B
 //    Feather - (when big) fly with B
-//  Lives are infinite; you restart from the last checkpoint flag.
+//  128 levels are built from the level number out of the pieces in levels.h.
+//  You have 5 lives (+1 every 100 coins). After a Game Over you can continue
+//  from the same level with a fresh score.
 // =====================================================================
 #include <Arduboy2.h>
 #include <EEPROM.h>
@@ -38,11 +41,12 @@ constexpr uint8_t FLY_MAX    = 150;   // frames of flight per landing
 constexpr uint8_t MAX_ENEMIES = 16;
 constexpr uint8_t MAX_POPS    = 4;
 constexpr uint8_t MAX_SPARKS  = 2;
+constexpr uint8_t START_LIVES = 5;
 
 constexpr int EEPROM_ADDR  = EEPROM_STORAGE_SPACE_START + 160;
-constexpr uint8_t EEPROM_MAGIC = 0x5B;
+constexpr uint8_t EEPROM_MAGIC = 0x5C;   // then hiScore (2 bytes), furthest level (1)
 
-enum GameState : uint8_t { TITLE, PLAYING, DYING, CLEAR, WIN };
+enum GameState : uint8_t { TITLE, INTRO, PLAYING, DYING, CLEAR, GAMEOVER, WIN };
 enum Power : uint8_t { SMALL, BIG, SPARK, WING };
 enum EnemyType : uint8_t { BLOB, SNAIL, SHELL, SPIKY };
 enum EnemyState : uint8_t { E_GONE, E_WAITING, E_ACTIVE, E_SQUASHED, E_POOF };
@@ -77,10 +81,15 @@ struct Spark {
 
 GameState state = TITLE;
 uint8_t  levelNum;
+uint8_t  maxLevel;   // furthest level reached (saved)
+uint8_t  lives;
+uint8_t  theme;      // 0-1 hills, 2 cave, 3 sky
+uint8_t  chunkPiece[LEVEL_W / 8];
 uint8_t  coins;
 uint16_t score;
 uint16_t hiScore;
 uint8_t  stateTimer;
+uint8_t  selLevel;   // level picked on the title screen
 
 int16_t px, py;      // player position (1/16 pixel), py is the top of Pip
 int16_t vx, vy;      // player velocity (1/16 pixel per frame)
@@ -93,7 +102,6 @@ uint8_t walkAnim;
 uint8_t power;
 uint8_t invuln;      // blink frames after getting hit
 uint8_t flyMeter;
-int16_t checkX;      // checkpoint x in pixels, -1 = level start
 int16_t camX;
 
 Enemy enemies[MAX_ENEMIES];
@@ -118,8 +126,51 @@ void setUsed(int16_t tx, int16_t ty) {
   usedBits[i >> 3] |= (1 << (i & 7));
 }
 
+// ------------------------------------------------------------ level builder
+uint16_t mix(uint16_t x) {                     // small deterministic hash
+  x ^= x << 7;
+  x ^= x >> 9;
+  x ^= x << 8;
+  return x * 40503u;
+}
+
+// Pick the piece for each 8-column chunk of the current level.
+void buildLevel() {
+  theme = levelNum & 3;
+  uint8_t maxD = levelNum < 8 ? 0 : levelNum < 20 ? 1 : levelNum < 40 ? 2 : 3;
+  uint8_t mask = (theme == 3) ? 4 : (theme == 2) ? 2 : 1;
+  for (uint8_t chunk = 1; chunk < 14; chunk++) {
+    uint16_t h = mix(levelNum * 16 + chunk + 0x9E37);
+    uint8_t piece = (theme == 3) ? PIECE_SKY_EASY : 0;   // fallback: an easy piece
+    for (uint8_t tries = 0; tries < 40; tries++) {
+      uint8_t p = h % NUM_PIECES;
+      uint8_t info = pgm_read_byte(&pieceInfo[p]);
+      if ((info & mask) && (info >> 4) <= maxD) { piece = p; break; }
+      h = mix(h + 1);
+    }
+    chunkPiece[chunk] = piece;
+  }
+  chunkPiece[2] = (theme == 3) ? PIECE_WING : PIECE_POWER;   // a power-up early on
+}
+
+// The tile the level builder puts at (tx, ty), before anything was collected.
 char rawTile(int16_t tx, int16_t ty) {
-  return pgm_read_byte(&levels[levelNum][ty][tx]);
+  if (ty == 0) return '.';
+  uint8_t chunk = tx >> 3, col = tx & 7;
+  if (chunk >= 14) {                           // staircase and goal flag
+    if (ty >= 6) return '#';
+    if (chunk == 14) {
+      uint8_t hgt = (col >= 1 && col <= 5) ? col : (col == 6 ? 5 : 0);
+      return (ty >= 6 - hgt) ? '#' : '.';
+    }
+    return (col == 3) ? 'F' : '.';
+  }
+  if (theme == 2 && ty == 1) return 'B';       // cave ceiling
+  if (chunk == 0) {                            // start
+    if (ty >= 6) return '#';
+    return (ty == 5 && col == 2) ? 'S' : '.';
+  }
+  return pgm_read_byte(&pieces[chunkPiece[chunk]][ty - 1][col]);
 }
 
 // Tile at grid position, after taking collected/broken tiles into account.
@@ -157,6 +208,7 @@ int16_t playerH() {
 
 // ------------------------------------------------------------ level setup
 void loadLevel() {
+  buildLevel();
   memset(usedBits, 0, sizeof(usedBits));
   memset(pops, 0, sizeof(pops));
   memset(enemies, 0, sizeof(enemies));
@@ -177,13 +229,15 @@ void loadLevel() {
         e.y = ty * TILE;
         e.dir = -1;
         e.type = (c == 'e') ? BLOB : (c == 't') ? SNAIL : SPIKY;
+        if (c == 'e') {                        // later levels get tougher enemies
+          uint16_t r = mix(levelNum * 128 + tx);
+          uint8_t chance = levelNum / 6;
+          if (chance > 10) chance = 10;
+          if ((r & 15) < chance) e.type = (r & 32) ? SPIKY : SNAIL;
+        }
         e.state = E_WAITING;
       }
     }
-  }
-  if (checkX >= 0) {
-    startX = checkX;
-    startY = 5 * TILE;
   }
   px = startX << 4;
   py = (startY + 8 - playerH()) << 4;
@@ -197,22 +251,21 @@ void loadLevel() {
   camX = startX - 56;
   if (camX < 0) camX = 0;
   if (camX > LEVEL_PX - WIDTH) camX = LEVEL_PX - WIDTH;
-  // enemies behind a checkpoint don't come back
-  if (checkX >= 0) {
-    for (uint8_t i = 0; i < MAX_ENEMIES; i++) {
-      if (enemies[i].x < startX + 24) enemies[i].state = E_GONE;
-    }
-  }
   state = PLAYING;
 }
 
-void newGame() {
-  levelNum = 0;
+void startLevel() {                            // show "LEVEL n" first
+  state = INTRO;
+  stateTimer = 90;
+}
+
+void newGame(uint8_t level) {
+  levelNum = level;
+  lives = START_LIVES;
   coins = 0;
   score = 0;
   power = SMALL;
-  checkX = -1;
-  loadLevel();
+  startLevel();
 }
 
 void addScore(uint16_t pts) {
@@ -221,8 +274,13 @@ void addScore(uint16_t pts) {
 
 void addCoin() {
   addScore(100);
-  if (++coins >= 100) coins = 0;
-  sfx(1319, 4);
+  if (++coins >= 100) {                        // 100 coins = extra life
+    coins = 0;
+    if (lives < 99) lives++;
+    sfx(1568, 20);
+  } else {
+    sfx(1319, 4);
+  }
 }
 
 void killPlayer() {
@@ -253,20 +311,23 @@ void hurtPlayer() {
 }
 
 // ------------------------------------------------------------ high score
-void loadHiScore() {
+void loadSave() {
   if (EEPROM.read(EEPROM_ADDR) == EEPROM_MAGIC) {
     EEPROM.get(EEPROM_ADDR + 1, hiScore);
+    maxLevel = EEPROM.read(EEPROM_ADDR + 3);
+    if (maxLevel >= NUM_LEVELS) maxLevel = 0;
   } else {
     hiScore = 0;
+    maxLevel = 0;
   }
 }
 
-void saveHiScore() {
-  if (score > hiScore) {
-    hiScore = score;
-    EEPROM.update(EEPROM_ADDR, EEPROM_MAGIC);
-    EEPROM.put(EEPROM_ADDR + 1, hiScore);
-  }
+void writeSave() {                             // EEPROM.update skips unchanged bytes
+  if (score > hiScore) hiScore = score;
+  if (levelNum > maxLevel && levelNum < NUM_LEVELS) maxLevel = levelNum;
+  EEPROM.update(EEPROM_ADDR, EEPROM_MAGIC);
+  EEPROM.put(EEPROM_ADDR + 1, hiScore);
+  EEPROM.update(EEPROM_ADDR + 3, maxLevel);
 }
 
 // ------------------------------------------------------------ blocks
@@ -519,7 +580,7 @@ void updatePlayer() {
   if (onGround) coyote = 6;
   else if (coyote) coyote--;
 
-  // --- pickups, hazards and checkpoints
+  // --- pickups and hazards
   for (int16_t ty = Y >> 3; ty <= (Y + h - 1) >> 3; ty++) {
     for (int16_t tx = (X + 1) >> 3; tx <= (X + 6) >> 3; tx++) {
       char c = tileAt(tx, ty);
@@ -529,9 +590,6 @@ void updatePlayer() {
       } else if (c == 's' && Y + h - 1 >= ty * TILE + 3) {
         killPlayer();                          // spikes hurt even big Pip
         return;
-      } else if (c == 'K' && checkX < tx * TILE) {
-        checkX = tx * TILE;
-        sfx(988, 10);
       }
     }
   }
@@ -684,7 +742,6 @@ void drawWorld() {
         case 'U': f = TILE_USED; break;
         case 'o': f = coinFrame; break;
         case 's': f = TILE_SPIKE; break;
-        case 'K': f = (checkX == tx * TILE) ? TILE_CHECK_ON : TILE_CHECK_OFF; break;
         case 'F': f = (tileAt(tx, ty - 1) == 'F') ? TILE_POLE : TILE_FLAG; break;
         case 'P': {
           bool left = tileAt(tx - 1, ty) != 'P';
@@ -765,19 +822,22 @@ void printNum(uint16_t n, uint8_t digits) {
 void drawHud() {
   arduboy.fillRect(0, 0, WIDTH, 8, BLACK);
   arduboy.setCursor(0, 0);
-  arduboy.print(F("W"));
+  arduboy.print(F("L"));
   arduboy.print(levelNum + 1);
-  arduboy.setCursor(18, 0);
+  arduboy.setCursor(26, 0);
+  arduboy.print(F("x"));
+  arduboy.print(lives);
+  arduboy.setCursor(44, 0);
   arduboy.print(F("$"));
   printNum(coins, 2);
   if (power == SPARK) {
-    Sprites::drawSelfMasked(44, 0, itemSprite, ITEM_FLOWER);
+    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_FLOWER);
   } else if (power == WING) {
-    Sprites::drawSelfMasked(44, 0, itemSprite, ITEM_FEATHER);
-    arduboy.drawRect(54, 2, 22, 4, WHITE);     // flight meter
-    arduboy.fillRect(55, 3, flyMeter * 20 / FLY_MAX, 2, WHITE);
+    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_FEATHER);
+    arduboy.drawRect(74, 2, 20, 4, WHITE);     // flight meter
+    arduboy.fillRect(75, 3, flyMeter * 18 / FLY_MAX, 2, WHITE);
   } else if (power == BIG) {
-    Sprites::drawSelfMasked(44, 0, itemSprite, ITEM_BERRY);
+    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_BERRY);
   }
   arduboy.setCursor(98, 0);
   printNum(score, 5);
@@ -803,7 +863,11 @@ void drawTitle() {
   Sprites::drawSelfMasked(20, 40, heroBigSprite, (arduboy.frameCount >> 3) & 1);
 
   printCentered(F("PIP QUEST"), 9, 2, 2);
-  if ((arduboy.frameCount >> 5) & 1) printCentered(F("PRESS A"), 7, 22, 1);
+  arduboy.setCursor(28, 20);
+  arduboy.print(F("LEVEL "));
+  if (selLevel > 0) arduboy.print('<');
+  arduboy.print(selLevel + 1);
+  if (selLevel < maxLevel) arduboy.print('>');
   arduboy.setCursor(0, 31);
   arduboy.print(F("HI "));
   arduboy.print(hiScore);
@@ -811,12 +875,23 @@ void drawTitle() {
   arduboy.print(arduboy.audio.enabled() ? F("B:SND ON") : F("B:SNDOFF"));
 }
 
+void drawIntro() {
+  arduboy.setCursor(40, 18);
+  arduboy.print(F("LEVEL "));
+  arduboy.print(levelNum + 1);
+  Sprites::drawSelfMasked(50, 34, heroSprite, 0);
+  arduboy.setCursor(62, 34);
+  arduboy.print(F("x "));
+  arduboy.print(lives);
+}
+
 // ------------------------------------------------------------ main loop
 void setup() {
   arduboy.begin();
   arduboy.setFrameRate(60);
   beep.begin();
-  loadHiScore();
+  loadSave();
+  selLevel = maxLevel;
 }
 
 void loop() {
@@ -834,7 +909,14 @@ void loop() {
         arduboy.audio.saveOnOff();
         sfx(880, 5);
       }
-      if (arduboy.justPressed(A_BUTTON)) newGame();
+      if (arduboy.justPressed(UP_BUTTON) && selLevel < maxLevel) selLevel++;
+      if (arduboy.justPressed(DOWN_BUTTON) && selLevel > 0) selLevel--;
+      if (arduboy.justPressed(A_BUTTON)) newGame(selLevel);
+      break;
+
+    case INTRO:
+      drawIntro();
+      if (--stateTimer == 0) loadLevel();
       break;
 
     case PLAYING:
@@ -849,7 +931,7 @@ void loop() {
       break;
 
     case DYING:
-      // Pip hops up and falls off the screen, then restarts (infinite lives)
+      // Pip hops up and falls off the screen
       if (stateTimer < 70) {
         py += vy;
         vy += 4;
@@ -859,7 +941,13 @@ void loop() {
       drawHud();
       if (--stateTimer == 0) {
         power = SMALL;
-        loadLevel();
+        if (--lives == 0) {
+          writeSave();
+          state = GAMEOVER;
+          stateTimer = 60;
+        } else {
+          startLevel();
+        }
       }
       break;
 
@@ -868,16 +956,33 @@ void loop() {
       drawWorld();
       drawPlayer();
       drawHud();
-      printCentered(F("WORLD CLEAR!"), 12, 24, 1);
+      printCentered(F("LEVEL CLEAR!"), 12, 24, 1);
       if (--stateTimer == 0) {
-        checkX = -1;
-        saveHiScore();
         if (++levelNum >= NUM_LEVELS) {
-          saveHiScore();
+          writeSave();
           state = WIN;
         } else {
-          loadLevel();
+          writeSave();
+          selLevel = maxLevel;
+          startLevel();
         }
+      }
+      break;
+
+    case GAMEOVER:
+      printCentered(F("GAME OVER"), 9, 6, 2);
+      arduboy.setCursor(28, 28);
+      arduboy.print(F("SCORE "));
+      arduboy.print(score);
+      arduboy.setCursor(4, 44);
+      arduboy.print(F("A:CONTINUE  B:TITLE"));
+      if (stateTimer) {
+        stateTimer--;
+      } else if (arduboy.justPressed(A_BUTTON)) {
+        newGame(levelNum);                     // same level, fresh score and lives
+      } else if (arduboy.justPressed(B_BUTTON)) {
+        selLevel = maxLevel;
+        state = TITLE;
       }
       break;
 
@@ -887,7 +992,10 @@ void loop() {
       arduboy.setCursor(28, 44);
       arduboy.print(F("SCORE "));
       arduboy.print(score);
-      if (arduboy.justPressed(A_BUTTON)) state = TITLE;
+      if (arduboy.justPressed(A_BUTTON)) {
+        selLevel = maxLevel;
+        state = TITLE;
+      }
       break;
   }
 
