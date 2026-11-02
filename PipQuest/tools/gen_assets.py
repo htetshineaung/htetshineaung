@@ -254,7 +254,6 @@ hrow(L1, 89, 95, 4, "o")
 put(L1, 91, 2, "?"); put(L1, 93, 2, "?")
 put(L1, 96, 5, "e"); put(L1, 98, 5, "e")
 column(L1, 106, 2, "P"); column(L1, 107, 2, "P")
-put(L1, 104, 5, "e")
 for i in range(5):
     column(L1, 111 + i, i + 1)
 column(L1, 116, 5)

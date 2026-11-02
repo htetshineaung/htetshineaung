@@ -62,6 +62,8 @@ int16_t vx, vy;      // player velocity (1/16 pixel per frame)
 int16_t startX, startY;
 bool    onGround;
 bool    facingLeft;
+uint8_t coyote;      // frames left to still jump after walking off a ledge
+uint8_t jumpBuffer;  // frames a jump press is remembered before landing
 uint8_t walkAnim;
 int16_t camX;
 
@@ -136,6 +138,7 @@ void loadLevel() {
   vx = vy = 0;
   onGround = false;
   facingLeft = false;
+  coyote = jumpBuffer = 0;
   camX = 0;
   state = PLAYING;
 }
@@ -239,18 +242,22 @@ void updatePlayer() {
     vx += accel;
     facingLeft = false;
   } else if (onGround) {
-    if (vx > 0) { vx -= 2; if (vx < 0) vx = 0; }
-    else if (vx < 0) { vx += 2; if (vx > 0) vx = 0; }
+    if (vx > 0) { vx -= 3; if (vx < 0) vx = 0; }
+    else if (vx < 0) { vx += 3; if (vx > 0) vx = 0; }
   }
   if (vx > maxV) vx = (vx - 2 > maxV) ? vx - 2 : maxV;
   if (vx < -maxV) vx = (vx + 2 < -maxV) ? vx + 2 : -maxV;
 
-  if (arduboy.justPressed(A_BUTTON) && onGround) {
+  if (arduboy.justPressed(A_BUTTON)) jumpBuffer = 6;
+  else if (jumpBuffer) jumpBuffer--;
+  if (jumpBuffer && coyote) {
     vy = (abs(vx) > WALK_MAX) ? RUN_JUMP_V : JUMP_V;
     onGround = false;
+    jumpBuffer = 0;
+    coyote = 0;
     sfx(660, 4);
   }
-  if (!arduboy.pressed(A_BUTTON) && vy < -24) vy = -24;  // short hop
+  if (!arduboy.pressed(A_BUTTON) && vy < -48) vy = -48;  // tap = small jump, hold = big jump
   vy += GRAVITY;
   if (vy > MAX_FALL) vy = MAX_FALL;
 
@@ -296,6 +303,16 @@ void updatePlayer() {
       bumpTile(cx, ty);
     }
   }
+  // Standing still only sinks a fraction of a pixel per frame, so also check
+  // the row just below the feet; otherwise onGround flickers every other frame.
+  if (!onGround && vy >= 0 && ((Y + 8) & 7) == 0 &&
+      (solidAt(X + 1, Y + 8) || solidAt(X + 6, Y + 8))) {
+    py = Y << 4;
+    vy = 0;
+    onGround = true;
+  }
+  if (onGround) coyote = 6;
+  else if (coyote) coyote--;
 
   // --- pickups, hazards and the goal
   for (int16_t ty = Y >> 3; ty <= (Y + 7) >> 3; ty++) {
@@ -307,13 +324,19 @@ void updatePlayer() {
       } else if (c == 's' && Y + 7 >= ty * TILE + 3) {
         killPlayer();
         return;
-      } else if (c == 'F') {
-        state = CLEAR;
-        stateTimer = 150;
-        addScore((uint16_t)(5 - (Y >> 4 > 4 ? 4 : Y >> 4)) * 400);  // higher = more
-        sfx(784, 30);
-        return;
       }
+    }
+  }
+
+  // The goal counts the whole pole column, so Pip can't jump over the top of it.
+  for (int16_t tx = (X + 1) >> 3; tx <= (X + 6) >> 3; tx++) {
+    if (tileAt(tx, LEVEL_H - 3) == 'F') {
+      state = CLEAR;
+      stateTimer = 150;
+      int16_t h = (Y < 0) ? 0 : (Y >> 4);      // grab the pole higher = more points
+      addScore((uint16_t)(5 - (h > 4 ? 4 : h)) * 400);
+      sfx(784, 30);
+      return;
     }
   }
 
