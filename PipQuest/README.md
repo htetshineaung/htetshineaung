@@ -32,9 +32,18 @@ or B to go back to the title. The Arduboy saves the furthest level you reached
 and your high score.
 
 ## Levels
-The 128 levels are built from the level number, out of 8-column pieces in
-`tools/gen_assets.py`. The themes rotate (Hills, Hills, Cave, Sky), and
-harder pieces and tougher enemies appear as the level number goes up.
+Each of the 128 levels is built from its level number, so it is the same every
+time you play it, but no two levels are alike. A level is a row of sections,
+each one a feature with its own random size: gaps, single or double pipes,
+hills, staircases (some with a pit at the top), block rows with coins and
+power-ups, spike pits with brick bridges, enemy squads, brick walls and
+floating platforms. The same feature never shows up more than twice in a row.
+
+Themes rotate: Hills, Spike Hills, Cave (with a brick ceiling) and Sky (lots
+of floating platforms). As the level number goes up, levels get longer
+(112 to 200 tiles) and gaps get wider, with taller pipes and stairs, more
+spikes and bigger enemy squads. Snails and spikies gradually replace blobs,
+and from level 49 some enemies walk twice as fast.
 
 ## Enemies
 - **Blob**: stomp it.
@@ -60,7 +69,8 @@ arduino-cli compile --fqbn arduino:avr:leonardo PipQuest
 arduino-cli upload  --fqbn arduino:avr:leonardo -p /dev/ttyACM0 PipQuest
 ```
 
-## Make your own level pieces
-Edit the `PIECES` list in `tools/gen_assets.py` (one character per 8x8 tile,
-the legend is at the top of the list), then run `python3 tools/gen_assets.py`
-to regenerate `levels.h` and `sprites.h`.
+## Change the levels
+The level builder is `buildLevel()` and `rawTile()` in `PipQuest.ino`. The
+`featureWeight` table there sets how often each feature appears in each theme.
+The pixel art lives in `tools/gen_assets.py`; run `python3 tools/gen_assets.py`
+after editing it to regenerate `sprites.h`.

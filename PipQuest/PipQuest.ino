@@ -13,7 +13,7 @@
 //    Berry   - Pip grows big, can break bricks and survive one hit
 //    Flower  - (when big) shoot sparks with B
 //    Feather - (when big) fly with B
-//  128 levels are built from the level number out of the pieces in levels.h.
+//  128 levels are built from the level number (see the level builder below).
 //  You have 5 lives (+1 every 100 coins). After a Game Over you can continue
 //  from the same level with a fresh score.
 // =====================================================================
@@ -27,7 +27,6 @@ BeepPin1 beep;
 
 // ------------------------------------------------------------ constants
 constexpr int16_t TILE       = 8;
-constexpr int16_t LEVEL_PX   = LEVEL_W * TILE;
 constexpr int16_t GRAVITY    = 6;     // physics values are in 1/16 pixel
 constexpr int16_t MAX_FALL   = 64;
 constexpr int16_t JUMP_V     = -74;
@@ -42,6 +41,7 @@ constexpr uint8_t MAX_ENEMIES = 16;
 constexpr uint8_t MAX_POPS    = 4;
 constexpr uint8_t MAX_SPARKS  = 2;
 constexpr uint8_t START_LIVES = 5;
+constexpr uint8_t MAX_CHUNKS  = LEVEL_W / 8;
 
 constexpr int EEPROM_ADDR  = EEPROM_STORAGE_SPACE_START + 160;
 constexpr uint8_t EEPROM_MAGIC = 0x5C;   // then hiScore (2 bytes), furthest level (1)
@@ -83,8 +83,12 @@ GameState state = TITLE;
 uint8_t  levelNum;
 uint8_t  maxLevel;   // furthest level reached (saved)
 uint8_t  lives;
-uint8_t  theme;      // 0-1 hills, 2 cave, 3 sky
-uint8_t  chunkPiece[LEVEL_W / 8];
+uint8_t  theme;      // 0 hills, 1 spike hills, 2 cave, 3 sky
+uint8_t  numChunks;  // the level is numChunks sections of 8 columns
+int16_t  levelW;     // level width in tiles
+int16_t  levelPx;    // level width in pixels
+uint8_t  chType[MAX_CHUNKS], chG[MAX_CHUNKS], chA[MAX_CHUNKS], chB[MAX_CHUNKS];
+uint16_t rngState;
 uint8_t  coins;
 uint16_t score;
 uint16_t hiScore;
@@ -127,6 +131,22 @@ void setUsed(int16_t tx, int16_t ty) {
 }
 
 // ------------------------------------------------------------ level builder
+// Each level is a row of 8-column sections. Every section is one feature
+// (a gap, pipes, a hill, stairs...) with its own random size, so no two levels
+// are alike. The random numbers come from the level number, so a level is
+// the same every time you play it. Difficulty rises with the level number.
+enum Feature : uint8_t {
+  F_FLAT, F_GAP, F_PIPE, F_BLOCKS, F_STAIRS, F_SPIKES, F_HILL, F_PLATFORM,
+  F_SQUAD, F_WALL, NUM_FEATURES, F_START, F_GOAL_STAIRS, F_FLAG
+};
+const uint8_t featureWeight[4][NUM_FEATURES] PROGMEM = {
+  // flat gap pipe blocks stairs spikes hill platform squad wall
+  {  2,   3,   3,   3,     2,     1,     3,   1,       2,    1 },   // hills
+  {  1,   3,   2,   2,     2,     4,     2,   2,       2,    2 },   // spike hills
+  {  2,   3,   2,   4,     2,     2,     1,   0,       3,    3 },   // cave
+  {  0,   3,   0,   2,     1,     0,     1,   6,       1,    0 },   // sky
+};
+
 uint16_t mix(uint16_t x) {                     // small deterministic hash
   x ^= x << 7;
   x ^= x >> 9;
@@ -134,49 +154,219 @@ uint16_t mix(uint16_t x) {                     // small deterministic hash
   return x * 40503u;
 }
 
-// Pick the piece for each 8-column chunk of the current level.
+uint8_t rnd8() {                               // next random byte from the level's seed
+  rngState ^= rngState << 7;
+  rngState ^= rngState >> 9;
+  rngState ^= rngState << 8;
+  return rngState >> 3;
+}
+
+uint8_t rnd(uint8_t n) {                       // 0..n-1
+  return rnd8() % n;
+}
+
+uint8_t upTo(uint8_t lo, uint8_t hi) {         // lo..hi inclusive
+  return lo + rnd(hi - lo + 1);
+}
+
 void buildLevel() {
-  theme = levelNum & 3;
-  uint8_t maxD = levelNum < 8 ? 0 : levelNum < 20 ? 1 : levelNum < 40 ? 2 : 3;
-  uint8_t mask = (theme == 3) ? 4 : (theme == 2) ? 2 : 1;
-  for (uint8_t chunk = 1; chunk < 14; chunk++) {
-    uint16_t h = mix(levelNum * 16 + chunk + 0x9E37);
-    uint8_t piece = (theme == 3) ? PIECE_SKY_EASY : 0;   // fallback: an easy piece
-    for (uint8_t tries = 0; tries < 40; tries++) {
-      uint8_t p = h % NUM_PIECES;
-      uint8_t info = pgm_read_byte(&pieceInfo[p]);
-      if ((info & mask) && (info >> 4) <= maxD) { piece = p; break; }
-      h = mix(h + 1);
+  uint8_t d = levelNum;
+  theme = d & 3;
+  rngState = mix(d * 31 + 7) | 1;
+  uint8_t mid = 11 + d / 8;                    // longer levels later on
+  if (mid > MAX_CHUNKS - 3) mid = MAX_CHUNKS - 3;
+  numChunks = mid + 3;
+  levelW = numChunks * 8;
+  levelPx = levelW * TILE;
+
+  bool cave = theme == 2;
+  uint8_t maxGap = d < 6 ? 2 : d < 30 ? 3 : 4;
+  uint8_t maxEnemy = d < 10 ? 1 : d < 40 ? 2 : 3;
+  uint8_t maxSpike = 1 + d / 20;
+  if (maxSpike > 4) maxSpike = 4;
+  uint8_t maxPipe = cave ? 2 : (d < 10 ? 2 : 3);
+  uint8_t maxStair = cave ? 2 : (2 + d / 25 > 4 ? 4 : 2 + d / 25);
+  uint8_t enemies = 0;
+  uint8_t prev = F_START, prev2 = F_START;
+
+  chType[0] = F_START;
+  chG[0] = 6;
+  for (uint8_t i = 1; i <= mid; i++) {
+    // pick a feature by weight, never the same as one of the last two
+    uint8_t t = F_FLAT;
+    for (uint8_t tries = 0; tries < 12; tries++) {
+      uint8_t total = 0, w[NUM_FEATURES];
+      for (uint8_t f = 0; f < NUM_FEATURES; f++) {
+        w[f] = pgm_read_byte(&featureWeight[theme][f]);
+        if ((f == F_SPIKES && d < 4) || (f == F_SQUAD && d < 3) || (f == F_WALL && d < 6)) w[f] = 0;
+        total += w[f];
+      }
+      uint8_t r = rnd(total);
+      for (t = 0; r >= w[t]; t++) r -= w[t];
+      if (t != prev && t != prev2) break;
     }
-    chunkPiece[chunk] = piece;
+    if (i == 2) t = F_BLOCKS;                  // a power-up early in every level
+    if (i == 1 && t == F_BLOCKS) t = cave ? F_PIPE : F_HILL;
+    uint8_t a = 0, b = rnd8(), g = 6;
+    switch (t) {
+      case F_FLAT:     a = rnd(3); b = rnd(maxEnemy + 1); break;
+      case F_GAP:      a = upTo(1, maxGap); break;
+      case F_PIPE:     a = upTo(1, maxPipe); break;
+      case F_BLOCKS:   a = upTo(2, 6); b &= 0x7F; break;
+      case F_STAIRS:   a = upTo(2, maxStair); break;
+      case F_SPIKES:   a = upTo(1, maxSpike); break;
+      case F_HILL:     g = (cave || d < 8) ? 5 : upTo(4, 5); a = rnd(4); break;
+      case F_PLATFORM: a = rnd(cave ? 2 : 3); break;
+      case F_SQUAD:    a = upTo(2, maxEnemy + 1); break;
+      case F_WALL:     a = upTo(2, cave ? 2 : 3); break;
+    }
+    // keep within the number of enemies the game can track
+    uint8_t want = 0;
+    if (t == F_FLAT) want = b;
+    else if (t == F_SQUAD) want = a;
+    else if (t == F_PIPE || t == F_BLOCKS || t == F_PLATFORM) want = b & 1;
+    else if (t == F_HILL) want = a & 1;
+    if (enemies + want > MAX_ENEMIES - 1) {
+      if (t == F_FLAT) b = 0;
+      else if (t == F_SQUAD) t = F_FLAT, a = 1, b = 0;
+      else if (t == F_HILL) a &= ~1;
+      else b &= ~1;
+      want = 0;
+    }
+    enemies += want;
+    chType[i] = t;
+    chG[i] = g;
+    chA[i] = a;
+    chB[i] = b;
+    prev2 = prev;
+    prev = t;
   }
-  chunkPiece[2] = (theme == 3) ? PIECE_WING : PIECE_POWER;   // a power-up early on
+  // power-up blocks: always one early, and sometimes a second one later
+  chB[2] |= 0x80;
+  if (d >= 10 && rnd(2)) {
+    for (uint8_t i = mid; i > 4; i--) {
+      if (chType[i] == F_BLOCKS) { chB[i] |= 0x80; break; }
+    }
+  }
+  chType[mid + 1] = F_GOAL_STAIRS;
+  chA[mid + 1] = cave ? 4 : upTo(3, 5);
+  chType[mid + 2] = F_FLAG;
+  chG[mid + 1] = chG[mid + 2] = 6;
 }
 
 // The tile the level builder puts at (tx, ty), before anything was collected.
 char rawTile(int16_t tx, int16_t ty) {
   if (ty == 0) return '.';
-  uint8_t chunk = tx >> 3, col = tx & 7;
-  if (chunk >= 14) {                           // staircase and goal flag
-    if (ty >= 6) return '#';
-    if (chunk == 14) {
-      uint8_t hgt = (col >= 1 && col <= 5) ? col : (col == 6 ? 5 : 0);
-      return (ty >= 6 - hgt) ? '#' : '.';
+  uint8_t ch = tx >> 3, c = tx & 7;
+  uint8_t t = chType[ch], g = chG[ch], a = chA[ch], b = chB[ch];
+  bool cave = theme == 2;
+  if (cave && ty == 1 && ch < numChunks - 2) return 'B';   // cave ceiling
+  bool ground = ty >= g;
+  switch (t) {
+    case F_START:
+      return ground ? '#' : (ty == 5 && c == 2) ? 'S' : '.';
+
+    case F_FLAT:                               // a: coins, b: enemies
+      if (ground) return '#';
+      if (ty == g - 1 && b && (c == 4 || (b > 1 && c == 6) || (b > 2 && c == 2))) return 'e';
+      if (a == 1 && ty == g - 3 && c >= 2 && c <= 5) return 'o';
+      if (a == 2 && ((ty == g - 3 && (c == 3 || c == 4)) || (ty == g - 2 && (c == 2 || c == 5)))) return 'o';
+      return '.';
+
+    case F_GAP: {                              // a: width
+      uint8_t s = (8 - a) / 2;
+      bool pit = c >= s && c < s + a;
+      if (ground) return pit ? '.' : '#';
+      if ((b & 1) && ty == g - 3 && c + 1 >= s && c <= s + a) return 'o';
+      return '.';
     }
-    return (col == 3) ? 'F' : '.';
+
+    case F_PIPE: {                             // a: height, b: 2nd pipe / enemy
+      if (ground) return '#';
+      bool two = (b & 2) && !cave;
+      uint8_t h2 = (a == 1) ? 2 : a - 1;
+      if ((c == 1 || c == 2) && ty >= g - a) return 'P';
+      if (two && (c == 5 || c == 6) && ty >= g - h2) return 'P';
+      if (!two && (b & 1) && c == 5 && ty == g - 1) return 'e';
+      return '.';
+    }
+
+    case F_BLOCKS: {                           // a: length, b: extras, bit 7: power-up
+      if (ground) return '#';
+      uint8_t r = g - 3, s = (8 - a) / 2;
+      bool in = c >= s && c < s + a;
+      if (ty == r && in) {
+        if ((b & 0x80) && c == s + a / 2) return (theme == 3 || (b & 0x40)) ? 'W' : 'M';
+        return (mix(tx * 13 + levelNum) & 3) == 0 ? '?' : 'B';
+      }
+      if ((b & 2) && ty == r - 1 && in && r - 1 > (cave ? 1 : 0)) return 'o';
+      if ((b & 1) && ty == g - 1 && c == s + a - 1) return 'e';
+      return '.';
+    }
+
+    case F_STAIRS: {                           // a: height, b bit 0: pit at the top
+      uint8_t h;
+      if (c < a) h = c + 1;
+      else if (c >= 8 - a) h = 8 - c;
+      else h = (b & 1) ? 0 : a;                // pit between the two staircases
+      if (h == 0) return '.';
+      return ty >= g - h ? '#' : '.';
+    }
+
+    case F_SPIKES: {                           // a: width
+      if (ground) return '#';
+      uint8_t s = (8 - a) / 2;
+      bool in = c >= s && c < s + a;
+      if (ty == g - 1 && in) return 's';
+      if (a >= 3 && ty == g - 3 && in) return 'B';         // a brick bridge above
+      if (a >= 3 && ty == g - 4 && in && g - 4 > (cave ? 1 : 0) && (b & 1)) return 'o';
+      return '.';
+    }
+
+    case F_HILL:                               // a: enemy / coins on top
+      if (ground) return '#';
+      if ((a & 1) && ty == g - 1 && c == 5) return 'e';
+      if ((a & 2) && ty == g - 2 && c >= 2 && c <= 5) return 'o';
+      return '.';
+
+    case F_PLATFORM: {                         // a: platform height
+      uint8_t pr = g - 1 - a;
+      if (ground) return c < 2 ? '#' : '.';
+      if (ty == pr && c >= 3 && c <= 5) return '#';
+      if ((b & 1) && ty == pr - 1 && c == 4) return 'e';
+      if ((b & 2) && ty == pr - 1 && (c == 3 || c == 5)) return 'o';
+      return '.';
+    }
+
+    case F_SQUAD:                              // a: enemies, b bit 0: lead snail
+      if (ground) return '#';
+      if (ty == g - 1 && (c & 1) && (c >> 1) < a) return (c == 1 && (b & 1)) ? 't' : 'e';
+      if ((b & 2) && ty == g - 3 && c >= 2 && c <= 5) return 'o';
+      return '.';
+
+    case F_WALL:                               // a: height, b bit 0: ? on top
+      if (ground) return '#';
+      if (c == 4 && ty >= g - a) return 'B';
+      if ((b & 1) && !cave && c == 4 && ty == g - a - 2) return '?';
+      return '.';
+
+    case F_GOAL_STAIRS: {                      // a: tallest step
+      if (ground) return '#';
+      uint8_t h = (c >= 1 && c <= a) ? c : (c > a && c <= a + 1 ? a : 0);
+      return (h && ty >= 6 - h) ? '#' : '.';
+    }
+
+    case F_FLAG:
+      if (ground) return '#';
+      return c == 3 ? 'F' : '.';
   }
-  if (theme == 2 && ty == 1) return 'B';       // cave ceiling
-  if (chunk == 0) {                            // start
-    if (ty >= 6) return '#';
-    return (ty == 5 && col == 2) ? 'S' : '.';
-  }
-  return pgm_read_byte(&pieces[chunkPiece[chunk]][ty - 1][col]);
+  return '.';
 }
 
 // Tile at grid position, after taking collected/broken tiles into account.
 // 'U' is an emptied block.
 char tileAt(int16_t tx, int16_t ty) {
-  if (tx < 0 || tx >= LEVEL_W) return '#';     // invisible side walls
+  if (tx < 0 || tx >= levelW) return '#';      // invisible side walls
   if (ty < 0 || ty >= LEVEL_H) return '.';     // open sky / bottomless pits
   char c = rawTile(tx, ty);
   if (c == 0 || c == 'e' || c == 't' || c == 'k' || c == 'S') return '.';
@@ -218,7 +408,7 @@ void loadLevel() {
   int16_t startY = 5 * TILE;
   uint8_t n = 0;
   for (int16_t ty = 0; ty < LEVEL_H; ty++) {
-    for (int16_t tx = 0; tx < LEVEL_W; tx++) {
+    for (int16_t tx = 0; tx < levelW; tx++) {
       char c = rawTile(tx, ty);
       if (c == 'S') {
         startX = tx * TILE;
@@ -250,7 +440,7 @@ void loadLevel() {
   flyMeter = FLY_MAX;
   camX = startX - 56;
   if (camX < 0) camX = 0;
-  if (camX > LEVEL_PX - WIDTH) camX = LEVEL_PX - WIDTH;
+  if (camX > levelPx - WIDTH) camX = levelPx - WIDTH;
   state = PLAYING;
 }
 
@@ -543,7 +733,7 @@ void updatePlayer() {
     }
   }
   if (px < 0) px = 0;                          // never leave the level
-  if (px > (LEVEL_PX - 8) << 4) px = (LEVEL_PX - 8) << 4;
+  if (px > (levelPx - 8) << 4) px = (levelPx - 8) << 4;
   X = px >> 4;
 
   // --- vertical movement and collision
@@ -618,7 +808,7 @@ void updatePlayer() {
   // camera
   camX = X - 56;
   if (camX < 0) camX = 0;
-  if (camX > LEVEL_PX - WIDTH) camX = LEVEL_PX - WIDTH;
+  if (camX > levelPx - WIDTH) camX = levelPx - WIDTH;
 }
 
 // ------------------------------------------------------------ enemies
@@ -661,7 +851,8 @@ void updateEnemies() {
         }
         if (e.x < camX - 32 || e.x > camX + WIDTH + 32) { e.state = E_GONE; continue; }
       }
-    } else if (arduboy.frameCount & 1) {       // walkers: half a pixel per frame
+    } else if ((arduboy.frameCount & 1) || (levelNum >= 48 && (i & 1))) {
+      // walkers: half a pixel per frame (some are twice as fast later on)
       int16_t nx = e.x + e.dir;
       int16_t edge = (e.dir > 0) ? nx + 7 : nx;
       if (solidAt(edge, e.y + 4)) e.dir = -e.dir;
@@ -730,7 +921,7 @@ void drawWorld() {
 
   for (int16_t col = 0; col <= WIDTH / TILE; col++) {
     int16_t tx = firstCol + col;
-    if (tx >= LEVEL_W) break;
+    if (tx >= levelW) break;
     int16_t sx = col * TILE - off;
     for (int16_t ty = 1; ty < LEVEL_H; ty++) {
       char c = tileAt(tx, ty);
