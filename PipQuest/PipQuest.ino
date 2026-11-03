@@ -27,13 +27,17 @@ BeepPin1 beep;
 
 // ------------------------------------------------------------ constants
 constexpr int16_t TILE       = 8;
-constexpr int16_t GRAVITY    = 6;     // physics values are in 1/16 pixel
-constexpr int16_t MAX_FALL   = 64;
-constexpr int16_t JUMP_V     = -74;
-constexpr int16_t RUN_JUMP_V = -82;
-constexpr int16_t WALK_MAX   = 22;
-constexpr int16_t RUN_MAX    = 36;
-constexpr int16_t STOMP_V    = -50;
+// Physics values are in 1/16 pixel per frame (60 frames a second).
+// Tuned to classic platformer feel: a jump stays about half a second in the
+// air and clears 4.5 tiles, walking is about 8 tiles a second and holding B
+// doubles it, and a stomp bounces Pip a bit over half as high as a jump.
+constexpr int16_t GRAVITY    = 4;
+constexpr int16_t MAX_FALL   = 56;
+constexpr int16_t JUMP_V     = -68;   // 4.5 tiles high
+constexpr int16_t RUN_JUMP_V = -71;   // a little higher when running
+constexpr int16_t WALK_MAX   = 17;    // about 8 tiles a second
+constexpr int16_t RUN_MAX    = 34;    // B doubles it
+constexpr int16_t STOMP_V    = -38;
 constexpr int16_t FLY_V      = -30;
 constexpr int16_t GLIDE_V    = 12;
 constexpr uint8_t FLY_MAX    = 150;   // frames of flight per landing
@@ -75,6 +79,7 @@ struct Item {        // power-up
   int8_t  dir;
   uint8_t type;      // ITEM_BERRY, ITEM_FLOWER, ITEM_FEATHER
   uint8_t rise;      // > 0 while it climbs out of the block
+  bool    fell;      // has dropped off the block row
   bool    active;
 };
 
@@ -418,6 +423,13 @@ int16_t playerH() {
   return power == SMALL ? 8 : BIG_H;
 }
 
+// Move this frame? Moves num out of every 6 frames (offset so enemies don't
+// all step together); fast doubles it.
+bool stepNow(uint8_t num, uint8_t offset, bool fast) {
+  if (fast) num = num * 2 > 6 ? 6 : num * 2;
+  return (uint8_t)((arduboy.frameCount + offset) % 6) < num;
+}
+
 // Where lift i is at frame f: it glides back and forth (or up and down).
 void liftPos(uint8_t i, uint16_t f, int16_t &x, int16_t &y) {
   uint8_t p = ((f >> 1) + i * 23) & 63;
@@ -535,7 +547,7 @@ void hurtPlayer() {
   if (invuln) return;
   if (power != SMALL) {
     setPower(SMALL);
-    invuln = 90;
+    invuln = 60;                               // a second of blinking, safe from enemies
     sfx(150, 15);
   } else {
     killPlayer();
@@ -594,6 +606,7 @@ void bumpTile(int16_t tx, int16_t ty) {
     item.y = ty * TILE;
     item.rise = TILE;
     item.dir = 1;
+    item.fell = false;
     if (power == SMALL) item.type = ITEM_BERRY;
     else item.type = (c == 'W') ? ITEM_FEATHER : ITEM_FLOWER;
     sfx(523, 10);
@@ -671,12 +684,23 @@ void updateItem() {
     }
     return;
   }
-  if (item.type == ITEM_BERRY) {               // berries roll away
+  // Every power-up leaves the block so it can be collected from the ground:
+  // berries keep sliding (bouncing off walls), flowers slide off the block
+  // row and stop once they land, feathers drift off and float down slowly.
+  bool feather = item.type == ITEM_FEATHER;
+  if (item.dir && stepNow(item.type == ITEM_BERRY ? 4 : feather ? 2 : 3, 0, false)) {
     int16_t nx = item.x + item.dir;
     int16_t edge = (item.dir > 0) ? nx + 7 : nx;
     if (solidAt(edge, item.y + 4)) item.dir = -item.dir;
     else item.x = nx;
-    if (!solidAt(item.x + 1, item.y + 8) && !solidAt(item.x + 6, item.y + 8)) item.y += 2;
+  }
+  bool supported = solidAt(item.x + 1, item.y + 8) || solidAt(item.x + 6, item.y + 8);
+  if (!supported) {
+    if (!feather) item.y += 2;
+    else if ((arduboy.frameCount & 3) == 0) item.y++;   // float down
+    item.fell = true;
+  } else if (item.fell && item.type != ITEM_BERRY) {
+    item.dir = 0;                              // landed on the ground: stay put
   }
   if (item.y > HEIGHT || item.x < camX - 16) {
     item.active = false;
@@ -755,7 +779,7 @@ void updatePlayer() {
   }
   if (onGround) flyMeter = (flyMeter > FLY_MAX - 3) ? FLY_MAX : flyMeter + 3;
 
-  if (!flying && !arduboy.pressed(A_BUTTON) && vy < -48) vy = -48;  // tap = small jump
+  if (!flying && !arduboy.pressed(A_BUTTON) && vy < -36) vy = -36;  // tap = small jump
   vy += GRAVITY;
   if (vy > MAX_FALL) vy = MAX_FALL;
   if (flying && (py >> 4) < 2 && vy < 0) vy = 0;   // fly no higher than the score bar
@@ -878,6 +902,7 @@ void updatePlayer() {
 }
 
 // ------------------------------------------------------------ enemies
+
 bool enemiesTouch(const Enemy &a, const Enemy &b) {
   return abs(a.x - b.x) < 8 && abs(a.y - b.y) < 8;
 }
@@ -907,7 +932,7 @@ void updateEnemies() {
     // move
     if (e.type == SHELL) {
       if (e.dir) {                             // sliding shell: fast
-        int16_t nx = e.x + e.dir * 3;
+        int16_t nx = e.x + e.dir * 2;          // twice walking speed
         int16_t edge = (e.dir > 0) ? nx + 7 : nx;
         if (solidAt(edge, e.y + 4)) {
           e.dir = -e.dir;
@@ -917,8 +942,10 @@ void updateEnemies() {
         }
         if (e.x < camX - 32 || e.x > camX + WIDTH + 32) { e.state = E_GONE; continue; }
       }
-    } else if ((arduboy.frameCount & 1) || (levelNum >= 48 && (i & 1))) {
-      // walkers: half a pixel per frame (some are twice as fast later on)
+    } else if (stepNow(e.type == SNAIL ? 4 : e.type == SPIKY ? 2 : 3, i,
+                       levelNum >= 48 && (i & 1))) {
+      // walkers move a fraction of Pip's walking speed: blobs about half,
+      // snails two thirds, spikies a third (some twice as fast later on)
       int16_t nx = e.x + e.dir;
       int16_t edge = (e.dir > 0) ? nx + 7 : nx;
       if (solidAt(edge, e.y + 4)) e.dir = -e.dir;
