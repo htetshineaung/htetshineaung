@@ -306,7 +306,9 @@ char rawTile(int16_t tx, int16_t ty) {
 
     case F_BLOCKS: {                           // a: length, b: extras, bit 7: power-up
       if (ground) return '#';
-      uint8_t r = g - 4, s = (8 - a) / 2;      // 2 free rows above Pip's head
+      // 2 free rows above Pip's head, but in a cave keep a free row under the
+      // ceiling so the power-up has room to come out of the block
+      uint8_t r = cave ? g - 3 : g - 4, s = (8 - a) / 2;
       bool in = c >= s && c < s + a;
       if (ty == r && in) {
         if ((b & 0x80) && c == s + a / 2) return (theme == 3 || (b & 0x40)) ? 'W' : 'M';
