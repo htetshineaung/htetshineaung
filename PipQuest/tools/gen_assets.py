@@ -410,6 +410,28 @@ TILES = {
 }
 
 
+# Tiny 3x5 font for the status bar: digits 0-9, then L, heart, coin,
+# berry, flower, feather. Each glyph is 4 columns wide (the 4th is a gap).
+TINY = """
+###|.#.|###|###|#.#|###|###|###|###|###|#..|#.#|.#.|.#.|#.#|..#
+#.#|##.|..#|..#|#.#|#..|#..|..#|#.#|#.#|#..|###|#.#|###|.#.|.##
+#.#|.#.|###|###|###|###|###|..#|###|###|#..|###|#.#|###|#.#|.#.
+#.#|.#.|#..|..#|..#|..#|#.#|.#.|#.#|..#|#..|.#.|#.#|###|.#.|##.
+###|###|###|###|..#|###|###|.#.|###|###|###|...|.#.|.#.|.#.|#..
+"""
+
+
+def tiny_frames():
+    lines = TINY.strip().split("\n")
+    glyphs = [l.split("|") for l in lines]
+    frames = []
+    for g in range(len(glyphs[0])):
+        r = [glyphs[y][g] + "....." for y in range(5)] + ["........"] * 3
+        frames.append(to_bytes([x[:4] + "...." for x in r]))
+    # keep only the first 4 columns of each 8-wide frame
+    return [f[:4] for f in frames]
+
+
 def rows(art, h=8):
     r = art.strip("\n").split("\n")
     assert len(r) == h and all(len(x) == 8 for x in r), art
@@ -472,6 +494,11 @@ with open(os.path.join(OUT, "sprites.h"), "w") as f:
     f.write(sprite("shellSprite", [to_bytes(rows(SHELL))]))
     f.write(sprite("spikySprite", [to_bytes(rows(a)) for a in SPIKY]))
     f.write("\n")
+    tf = tiny_frames()
+    f.write("// Tiny status bar font, 4x8 frames: 0-9, 10 L, 11 heart, 12 coin, 13 berry, 14 flower, 15 feather\n")
+    data = [4, 8] + [b for fr in tf for b in fr]
+    f.write("const uint8_t PROGMEM tinyFont[] = {\n  %s\n};\n" % ", ".join("0x%02X" % b for b in data))
+    f.write("#define TINY_L 10\n#define TINY_HEART 11\n#define TINY_COIN 12\n#define TINY_BERRY 13\n#define TINY_FLOWER 14\n#define TINY_FEATHER 15\n\n")
     for i, t in enumerate(item_order):
         f.write("#define ITEM_%s %d\n" % (t.upper(), i))
     f.write(sprite("itemSprite", [to_bytes(rows(ITEMS[t])) for t in item_order]))

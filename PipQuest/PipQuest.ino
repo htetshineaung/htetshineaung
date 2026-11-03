@@ -43,6 +43,8 @@ constexpr uint8_t MAX_SPARKS  = 2;
 constexpr uint8_t MAX_LIFTS   = 4;
 constexpr int16_t BIG_H       = 12;   // big Pip's height (small Pip is 8)
 constexpr int16_t LIFT_W      = 24;
+constexpr uint8_t GROUND      = 7;    // the ground is the bottom row
+constexpr int16_t HUD_H       = 6;    // height of the status bar
 constexpr uint8_t START_LIVES = 5;
 constexpr uint8_t MAX_CHUNKS  = LEVEL_W / 8;
 
@@ -201,7 +203,7 @@ void buildLevel() {
   uint8_t prev = F_START, prev2 = F_START;
 
   chType[0] = F_START;
-  chG[0] = 6;
+  chG[0] = GROUND;
   for (uint8_t i = 1; i <= mid; i++) {
     // pick a feature by weight, never the same as one of the last two
     uint8_t t = F_FLAT;
@@ -219,7 +221,7 @@ void buildLevel() {
     }
     if (i == 2) t = F_BLOCKS;                  // a power-up early in every level
     if (i == 1 && t == F_BLOCKS) t = cave ? F_PIPE : F_HILL;
-    uint8_t a = 0, b = rnd8(), g = 6;
+    uint8_t a = 0, b = rnd8(), g = GROUND;
     switch (t) {
       case F_FLAT:     a = rnd(3); b = rnd(maxEnemy + 1); break;
       case F_GAP:      a = upTo(1, maxGap); break;
@@ -227,7 +229,7 @@ void buildLevel() {
       case F_BLOCKS:   a = upTo(2, 6); b &= 0x7F; break;
       case F_STAIRS:   a = cave ? 1 : upTo(2, maxStair); break;
       case F_SPIKES:   a = upTo(1, maxSpike); break;
-      case F_HILL:     g = (cave || d < 8) ? 5 : upTo(4, 5); a = rnd(4); break;
+      case F_HILL:     g = (cave || d < 8) ? GROUND - 1 : upTo(GROUND - 2, GROUND - 1); a = rnd(4); break;
       case F_PLATFORM: a = rnd(cave ? 2 : 3); break;
       case F_SQUAD:    a = upTo(2, maxEnemy + 1); break;
       case F_WALL:     a = cave ? 1 : upTo(2, 3); break;
@@ -264,7 +266,7 @@ void buildLevel() {
   chType[mid + 1] = F_GOAL_STAIRS;
   chA[mid + 1] = cave ? 4 : upTo(3, 5);
   chType[mid + 2] = F_FLAG;
-  chG[mid + 1] = chG[mid + 2] = 6;
+  chG[mid + 1] = chG[mid + 2] = GROUND;
 }
 
 // The tile the level builder puts at (tx, ty), before anything was collected.
@@ -277,7 +279,7 @@ char rawTile(int16_t tx, int16_t ty) {
   bool ground = ty >= g;
   switch (t) {
     case F_START:
-      return ground ? '#' : (ty == 5 && c == 2) ? 'S' : '.';
+      return ground ? '#' : (ty == g - 1 && c == 2) ? 'S' : '.';
 
     case F_FLAT:                               // a: coins, b: enemies
       if (ground) return '#';
@@ -373,7 +375,7 @@ char rawTile(int16_t tx, int16_t ty) {
     case F_GOAL_STAIRS: {                      // a: tallest step
       if (ground) return '#';
       uint8_t h = (c >= 1 && c <= a) ? c : (c > a && c <= a + 1 ? a : 0);
-      return (h && ty >= 6 - h) ? '#' : '.';
+      return (h && ty >= g - h) ? '#' : '.';
     }
 
     case F_FLAG:
@@ -435,7 +437,7 @@ void loadLevel() {
   memset(sparks, 0, sizeof(sparks));
   item.active = false;
   int16_t startX = 2 * TILE;
-  int16_t startY = 5 * TILE;
+  int16_t startY = (GROUND - 1) * TILE;
   uint8_t n = 0;
   for (int16_t ty = 0; ty < LEVEL_H; ty++) {
     for (int16_t tx = 0; tx < levelW; tx++) {
@@ -466,7 +468,7 @@ void loadLevel() {
     Lift &l = lifts[numLifts++];
     l.vertical = chA[ch];
     l.x0 = ch * 64 + (l.vertical ? 24 : 8);
-    l.y0 = 48;                                 // level with the ground
+    l.y0 = GROUND * TILE;                      // level with the ground
   }
   px = startX << 4;
   py = (startY + 8 - playerH()) << 4;
@@ -1086,36 +1088,37 @@ void drawPlayer() {
   }
 }
 
-void printNum(uint16_t n, uint8_t digits) {
-  uint16_t lim = 10;
-  for (uint8_t d = 1; d < digits; d++, lim *= 10) {
-    if (n < lim) arduboy.print('0');
+// Draw a number in the tiny 3x5 font; returns the x after it.
+int16_t tinyNum(int16_t x, uint16_t n, uint8_t digits) {
+  char buf[5];
+  uint8_t len = 0;
+  do { buf[len++] = n % 10; n /= 10; } while (n && len < 5);
+  while (len < digits) buf[len++] = 0;         // leading zeros
+  while (len) {
+    Sprites::drawSelfMasked(x, 0, tinyFont, buf[--len]);
+    x += 4;
   }
-  arduboy.print(n);
+  return x;
 }
 
-void drawHud() {
-  arduboy.fillRect(0, 0, WIDTH, 8, BLACK);
-  arduboy.setCursor(0, 0);
-  arduboy.print(F("L"));
-  arduboy.print(levelNum + 1);
-  arduboy.setCursor(26, 0);
-  arduboy.print(F("x"));
-  arduboy.print(lives);
-  arduboy.setCursor(44, 0);
-  arduboy.print(F("$"));
-  printNum(coins, 2);
-  if (power == SPARK) {
-    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_FLOWER);
+void drawHud() {                               // a 6-pixel status bar
+  arduboy.fillRect(0, 0, WIDTH, HUD_H, BLACK);
+  Sprites::drawSelfMasked(0, 0, tinyFont, TINY_L);
+  tinyNum(4, levelNum + 1, 1);
+  Sprites::drawSelfMasked(22, 0, tinyFont, TINY_HEART);
+  tinyNum(27, lives, 1);
+  Sprites::drawSelfMasked(40, 0, tinyFont, TINY_COIN);
+  tinyNum(45, coins, 2);
+  if (power == BIG) {
+    Sprites::drawSelfMasked(58, 0, tinyFont, TINY_BERRY);
+  } else if (power == SPARK) {
+    Sprites::drawSelfMasked(58, 0, tinyFont, TINY_FLOWER);
   } else if (power == WING) {
-    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_FEATHER);
-    arduboy.drawRect(74, 2, 20, 4, WHITE);     // flight meter
-    arduboy.fillRect(75, 3, flyMeter * 18 / FLY_MAX, 2, WHITE);
-  } else if (power == BIG) {
-    Sprites::drawSelfMasked(64, 0, itemSprite, ITEM_BERRY);
+    Sprites::drawSelfMasked(58, 0, tinyFont, TINY_FEATHER);
+    arduboy.drawRect(63, 0, 20, 5, WHITE);     // flight meter
+    arduboy.fillRect(64, 1, flyMeter * 18 / FLY_MAX, 3, WHITE);
   }
-  arduboy.setCursor(98, 0);
-  printNum(score, 5);
+  tinyNum(108, score, 5);
 }
 
 void printCentered(const __FlashStringHelper *s, uint8_t len, int16_t y, uint8_t size) {
