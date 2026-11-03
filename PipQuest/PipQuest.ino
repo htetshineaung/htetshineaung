@@ -40,6 +40,9 @@ constexpr uint8_t FLY_MAX    = 150;   // frames of flight per landing
 constexpr uint8_t MAX_ENEMIES = 16;
 constexpr uint8_t MAX_POPS    = 4;
 constexpr uint8_t MAX_SPARKS  = 2;
+constexpr uint8_t MAX_LIFTS   = 4;
+constexpr int16_t BIG_H       = 12;   // big Pip's height (small Pip is 8)
+constexpr int16_t LIFT_W      = 24;
 constexpr uint8_t START_LIVES = 5;
 constexpr uint8_t MAX_CHUNKS  = LEVEL_W / 8;
 
@@ -71,6 +74,11 @@ struct Item {        // power-up
   uint8_t type;      // ITEM_BERRY, ITEM_FLOWER, ITEM_FEATHER
   uint8_t rise;      // > 0 while it climbs out of the block
   bool    active;
+};
+
+struct Lift {        // moving platform; its position comes from the frame counter
+  int16_t x0, y0;    // start position (left end, top)
+  bool    vertical;
 };
 
 struct Spark {
@@ -111,6 +119,9 @@ int16_t camX;
 Enemy enemies[MAX_ENEMIES];
 Pop   pops[MAX_POPS];
 Spark sparks[MAX_SPARKS];
+Lift  lifts[MAX_LIFTS];
+uint8_t numLifts;
+int8_t  onLift = -1; // lift Pip is standing on
 Item  item;
 uint8_t usedBits[(LEVEL_W * LEVEL_H + 7) / 8];  // collected coins, hit blocks
 
@@ -137,14 +148,14 @@ void setUsed(int16_t tx, int16_t ty) {
 // the same every time you play it. Difficulty rises with the level number.
 enum Feature : uint8_t {
   F_FLAT, F_GAP, F_PIPE, F_BLOCKS, F_STAIRS, F_SPIKES, F_HILL, F_PLATFORM,
-  F_SQUAD, F_WALL, NUM_FEATURES, F_START, F_GOAL_STAIRS, F_FLAG
+  F_SQUAD, F_WALL, F_LIFT, NUM_FEATURES, F_START, F_GOAL_STAIRS, F_FLAG
 };
 const uint8_t featureWeight[4][NUM_FEATURES] PROGMEM = {
-  // flat gap pipe blocks stairs spikes hill platform squad wall
-  {  2,   3,   3,   3,     2,     1,     3,   1,       2,    1 },   // hills
-  {  1,   3,   2,   2,     2,     4,     2,   2,       2,    2 },   // spike hills
-  {  2,   3,   2,   4,     2,     2,     1,   0,       3,    3 },   // cave
-  {  0,   3,   0,   2,     1,     0,     1,   6,       1,    0 },   // sky
+  // flat gap pipe blocks stairs spikes hill platform squad wall lift
+  {  2,   3,   3,   3,     2,     1,     3,   1,       2,    1,   2 },   // hills
+  {  1,   3,   2,   2,     2,     4,     2,   2,       2,    2,   2 },   // spike hills
+  {  2,   3,   2,   4,     2,     2,     1,   0,       3,    3,   0 },   // cave
+  {  0,   3,   0,   2,     1,     0,     1,   5,       1,    0,   4 },   // sky
 };
 
 uint16_t mix(uint16_t x) {                     // small deterministic hash
@@ -184,9 +195,9 @@ void buildLevel() {
   uint8_t maxEnemy = d < 10 ? 1 : d < 40 ? 2 : 3;
   uint8_t maxSpike = 1 + d / 20;
   if (maxSpike > (cave ? 2 : 4)) maxSpike = cave ? 2 : 4;
-  uint8_t maxPipe = cave ? 2 : (d < 10 ? 2 : 3);
-  uint8_t maxStair = cave ? 2 : (2 + d / 25 > 4 ? 4 : 2 + d / 25);
-  uint8_t enemies = 0;
+  uint8_t maxPipe = cave ? 1 : (d < 10 ? 2 : 3);   // caves: 1-high, so big Pip has room
+  uint8_t maxStair = cave ? 1 : (2 + d / 25 > 4 ? 4 : 2 + d / 25);
+  uint8_t enemies = 0, lifts = 0;
   uint8_t prev = F_START, prev2 = F_START;
 
   chType[0] = F_START;
@@ -198,7 +209,8 @@ void buildLevel() {
       uint8_t total = 0, w[NUM_FEATURES];
       for (uint8_t f = 0; f < NUM_FEATURES; f++) {
         w[f] = pgm_read_byte(&featureWeight[theme][f]);
-        if ((f == F_SPIKES && d < 4) || (f == F_SQUAD && d < 3) || (f == F_WALL && d < 6)) w[f] = 0;
+        if ((f == F_SPIKES && d < 4) || (f == F_SQUAD && d < 3) || (f == F_WALL && d < 6) ||
+            (f == F_LIFT && (d < 1 || lifts >= MAX_LIFTS))) w[f] = 0;
         total += w[f];
       }
       uint8_t r = rnd(total);
@@ -213,12 +225,13 @@ void buildLevel() {
       case F_GAP:      a = upTo(1, maxGap); break;
       case F_PIPE:     a = upTo(1, maxPipe); break;
       case F_BLOCKS:   a = upTo(2, 6); b &= 0x7F; break;
-      case F_STAIRS:   a = upTo(2, maxStair); break;
+      case F_STAIRS:   a = cave ? 1 : upTo(2, maxStair); break;
       case F_SPIKES:   a = upTo(1, maxSpike); break;
       case F_HILL:     g = (cave || d < 8) ? 5 : upTo(4, 5); a = rnd(4); break;
       case F_PLATFORM: a = rnd(cave ? 2 : 3); break;
       case F_SQUAD:    a = upTo(2, maxEnemy + 1); break;
-      case F_WALL:     a = upTo(2, cave ? 2 : 3); break;
+      case F_WALL:     a = cave ? 1 : upTo(2, 3); break;
+      case F_LIFT:     a = rnd(2); lifts++; break;   // a: 1 = up and down
     }
     // keep within the number of enemies the game can track
     uint8_t want = 0;
@@ -293,7 +306,7 @@ char rawTile(int16_t tx, int16_t ty) {
 
     case F_BLOCKS: {                           // a: length, b: extras, bit 7: power-up
       if (ground) return '#';
-      uint8_t r = g - 3, s = (8 - a) / 2;
+      uint8_t r = g - 4, s = (8 - a) / 2;      // 2 free rows above Pip's head
       bool in = c >= s && c < s + a;
       if (ty == r && in) {
         if ((b & 0x80) && c == s + a / 2) return (theme == 3 || (b & 0x40)) ? 'W' : 'M';
@@ -352,6 +365,9 @@ char rawTile(int16_t tx, int16_t ty) {
       if ((b & 1) && !cave && a == 2 && c == 4 && ty == g - a - 3) return '?';
       return '.';
 
+    case F_LIFT:                               // a pit with a moving platform
+      return (ground && c == 0) ? '#' : '.';
+
     case F_GOAL_STAIRS: {                      // a: tallest step
       if (ground) return '#';
       uint8_t h = (c >= 1 && c <= a) ? c : (c > a && c <= a + 1 ? a : 0);
@@ -395,7 +411,17 @@ bool wallAt(int16_t x, int16_t y, int16_t h) {
 }
 
 int16_t playerH() {
-  return power == SMALL ? 8 : 16;
+  return power == SMALL ? 8 : BIG_H;
+}
+
+// Where lift i is at frame f: it glides back and forth (or up and down).
+void liftPos(uint8_t i, uint16_t f, int16_t &x, int16_t &y) {
+  uint8_t p = ((f >> 1) + i * 23) & 63;
+  uint8_t t = p < 32 ? p : 63 - p;             // 0..31..0
+  x = lifts[i].x0;
+  y = lifts[i].y0;
+  if (lifts[i].vertical) y -= t * 3 / 4;       // rises 24 pixels
+  else x += t + (t >> 4);                      // slides 32 pixels: from one edge of the pit to the other
 }
 
 // ------------------------------------------------------------ level setup
@@ -430,6 +456,15 @@ void loadLevel() {
         e.state = E_WAITING;
       }
     }
+  }
+  numLifts = 0;
+  onLift = -1;
+  for (uint8_t ch = 0; ch < numChunks && numLifts < MAX_LIFTS; ch++) {
+    if (chType[ch] != F_LIFT) continue;
+    Lift &l = lifts[numLifts++];
+    l.vertical = chA[ch];
+    l.x0 = ch * 64 + (l.vertical ? 24 : 8);
+    l.y0 = 48;                                 // level with the ground
   }
   px = startX << 4;
   py = (startY + 8 - playerH()) << 4;
@@ -476,6 +511,7 @@ void addCoin() {
 }
 
 void killPlayer() {
+  onLift = -1;
   state = DYING;
   stateTimer = 90;
   vy = -70;
@@ -662,6 +698,13 @@ void updateItem() {
 // ------------------------------------------------------------ player
 void updatePlayer() {
   int16_t h = playerH();
+  if (onLift >= 0) {                           // ride along with the lift
+    int16_t x1, y1, x0, y0;
+    liftPos(onLift, arduboy.frameCount, x1, y1);
+    liftPos(onLift, arduboy.frameCount - 1, x0, y0);
+    px += (x1 - x0) << 4;
+    py += (y1 - y0) << 4;
+  }
   bool bHeld = arduboy.pressed(B_BUTTON);
   int16_t maxV = bHeld ? RUN_MAX : WALK_MAX;   // B always runs as well
   int16_t accel = onGround ? 3 : 2;
@@ -768,6 +811,23 @@ void updatePlayer() {
     py = Y << 4;
     vy = 0;
     onGround = true;
+  }
+  // land on a lift (only when coming down onto its top)
+  onLift = -1;
+  if (vy >= 0) {
+    for (uint8_t i = 0; i < numLifts; i++) {
+      int16_t lx, ly;
+      liftPos(i, arduboy.frameCount, lx, ly);
+      int16_t feet = Y + h;
+      if (X + 6 >= lx && X + 1 < lx + LIFT_W && feet >= ly && feet - (vy >> 4) - 3 <= ly) {
+        Y = ly - h;
+        py = Y << 4;
+        vy = 0;
+        onGround = true;
+        onLift = i;
+        break;
+      }
+    }
   }
   if (onGround) coyote = 6;
   else if (coyote) coyote--;
@@ -931,7 +991,8 @@ void drawWorld() {
       switch (c) {
         case '#': f = TILE_GROUND; break;
         case 'B': f = TILE_BRICK; break;
-        case '?': case 'M': case 'W': f = TILE_QUESTION; break;
+        case '?': f = ((arduboy.frameCount >> 4) & 1) ? TILE_QUESTION_B : TILE_QUESTION; break;
+        case 'M': case 'W': f = ((arduboy.frameCount >> 3) & 1) ? TILE_POWER_B : TILE_POWER; break;
         case 'U': f = TILE_USED; break;
         case 'o': f = coinFrame; break;
         case 's': f = TILE_SPIKE; break;
@@ -952,9 +1013,28 @@ void drawWorld() {
     if (pops[i].t) Sprites::drawSelfMasked(pops[i].x - camX, pops[i].y, tileSprite, coinFrame);
   }
 
+  for (uint8_t i = 0; i < numLifts; i++) {
+    int16_t lx, ly;
+    liftPos(i, arduboy.frameCount, lx, ly);
+    lx -= camX;
+    if (lx > -LIFT_W && lx < WIDTH) {
+      arduboy.fillRect(lx, ly, LIFT_W, 4, WHITE);
+      for (int16_t k = 2; k < LIFT_W; k += 4) arduboy.fillRect(lx + k, ly + 1, 2, 2, BLACK);
+    }
+  }
+
   if (item.active) {
     int16_t sx = item.x - camX;
-    Sprites::drawSelfMasked(sx, item.y, itemSprite, item.type);
+    bool alt = (arduboy.frameCount >> 3) & 1;
+    int16_t bob = 0;
+    if (!item.rise) {
+      if (item.type == ITEM_BERRY) {           // hop as it rolls: 0,-1,-2,-3,-3,-2,-1,0
+        int16_t p = (item.x >> 1) & 7;
+        bob = p < 4 ? -p : p - 7;
+      }
+      else if (item.type == ITEM_FEATHER) bob = (((arduboy.frameCount >> 3) & 3) == 1) ? -1 : (((arduboy.frameCount >> 3) & 3) == 3 ? 1 : 0);
+    }
+    Sprites::drawSelfMasked(sx, item.y + bob, itemSprite, item.type + (alt ? ITEM_BERRY_B : 0));
     if (item.rise) {                           // keep the block drawn in front
       int16_t blockY = item.y + TILE - item.rise;
       arduboy.fillRect(sx, blockY, 8, 8, BLACK);
@@ -998,9 +1078,9 @@ void drawPlayer() {
   if (power == SMALL) {
     arduboy.fillRect(sx + 1, sy, 6, 8, BLACK);  // keep Pip visible over tiles
     Sprites::drawSelfMasked(sx, sy, heroSprite, pose);
-  } else {
-    arduboy.fillRect(sx + 1, sy, 6, 16, BLACK);
-    Sprites::drawSelfMasked(sx, sy, heroBigSprite, (power - 1) * 6 + pose);
+  } else {                                     // 12 tall, stored in a 16-tall sprite
+    arduboy.fillRect(sx + 1, sy, 6, BIG_H, BLACK);
+    Sprites::drawSelfMasked(sx, sy - 4, heroBigSprite, (power - 1) * 6 + pose);
   }
 }
 
@@ -1119,8 +1199,8 @@ void loop() {
       updateItem();
       updatePops();
       drawWorld();
-      drawPlayer();
       drawHud();
+      drawPlayer();                            // on top, so Pip shows up near the score bar
       break;
 
     case DYING:

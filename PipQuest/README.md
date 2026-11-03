@@ -14,11 +14,12 @@ for coins and power-ups, smash bricks, and touch the flag pole to win.
 | B on title screen | Sound on/off |
 
 ## Power-ups
-Some `?` blocks hold a power-up instead of a coin.
+Power-ups come out of the flashing **power blocks** (a pulsing diamond),
+which look different from the shimmering `?` coin blocks.
 
 | Power-up | What it does | B button |
 |---|---|---|
-| **Berry** | Pip grows big: survives one hit, breaks bricks | Run |
+| **Berry** (hops along the ground) | Pip grows big: survives one hit, breaks bricks | Run |
 | **Spark Flower** (when big) | Shoot bouncing sparks that beat any enemy | Tap to shoot |
 | **Feather** (when big) | Fly, with a flight meter on the score bar | Hold to fly, and hold A while falling to glide |
 
@@ -36,8 +37,9 @@ Each of the 128 levels is built from its level number, so it is the same every
 time you play it, but no two levels are alike. A level is a row of sections,
 each one a feature with its own random size: gaps, single or double pipes,
 hills, staircases (some with a pit at the top), block rows with coins and
-power-ups, spike pits with brick bridges, enemy squads, brick walls and
-floating platforms. The same feature never shows up more than twice in a row.
+power-ups, spike pits with brick bridges, enemy squads, brick walls,
+floating platforms, and moving lifts that slide across a pit or ride up and
+down. The same feature never shows up more than twice in a row.
 
 Themes rotate: Hills, Spike Hills, Cave (with a brick ceiling) and Sky (lots
 of floating platforms). As the level number goes up, levels get longer
