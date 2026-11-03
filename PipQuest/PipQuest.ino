@@ -180,10 +180,10 @@ void buildLevel() {
   levelPx = levelW * TILE;
 
   bool cave = theme == 2;
-  uint8_t maxGap = d < 6 ? 2 : d < 30 ? 3 : 4;
+  uint8_t maxGap = d < 6 ? 2 : (d < 30 || cave) ? 3 : 4;   // big Pip jumps lower under a ceiling
   uint8_t maxEnemy = d < 10 ? 1 : d < 40 ? 2 : 3;
   uint8_t maxSpike = 1 + d / 20;
-  if (maxSpike > 4) maxSpike = 4;
+  if (maxSpike > (cave ? 2 : 4)) maxSpike = cave ? 2 : 4;
   uint8_t maxPipe = cave ? 2 : (d < 10 ? 2 : 3);
   uint8_t maxStair = cave ? 2 : (2 + d / 25 > 4 ? 4 : 2 + d / 25);
   uint8_t enemies = 0;
@@ -306,9 +306,10 @@ char rawTile(int16_t tx, int16_t ty) {
 
     case F_STAIRS: {                           // a: height, b bit 0: pit at the top
       uint8_t h;
+      // (cave: big Pip can't jump high enough under the ceiling to clear the pit)
       if (c < a) h = c + 1;
       else if (c >= 8 - a) h = 8 - c;
-      else h = (b & 1) ? 0 : a;                // pit between the two staircases
+      else h = ((b & 1) && !cave) ? 0 : a;     // pit between the staircases (not under a ceiling)
       if (h == 0) return '.';
       return ty >= g - h ? '#' : '.';
     }
@@ -318,8 +319,8 @@ char rawTile(int16_t tx, int16_t ty) {
       uint8_t s = (8 - a) / 2;
       bool in = c >= s && c < s + a;
       if (ty == g - 1 && in) return 's';
-      if (a >= 3 && ty == g - 3 && in) return 'B';         // a brick bridge above
-      if (a >= 3 && ty == g - 4 && in && g - 4 > (cave ? 1 : 0) && (b & 1)) return 'o';
+      if (a >= 3 && !cave && ty == g - 3 && in) return 'B';   // a brick bridge above
+      if (a >= 3 && !cave && ty == g - 4 && in && (b & 1)) return 'o';
       return '.';
     }
 
@@ -347,7 +348,8 @@ char rawTile(int16_t tx, int16_t ty) {
     case F_WALL:                               // a: height, b bit 0: ? on top
       if (ground) return '#';
       if (c == 4 && ty >= g - a) return 'B';
-      if ((b & 1) && !cave && c == 4 && ty == g - a - 2) return '?';
+      // a ? block high above a short wall (leaves room for big Pip to cross)
+      if ((b & 1) && !cave && a == 2 && c == 4 && ty == g - a - 3) return '?';
       return '.';
 
     case F_GOAL_STAIRS: {                      // a: tallest step
