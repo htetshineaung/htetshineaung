@@ -2,7 +2,7 @@
 
 A pocket Linux machine: **Raspberry Pi 5** with a **3.5" GPIO touchscreen** on top, and an
 **M5Stack Cardputer** in front of it as the **keyboard** and a **second screen for status
-and notifications**.
+and notifications**, plus a **trackball with L / R buttons** to the right of the keys.
 
 ![assembled case preview](case/preview/deck_assembled_preview.png)
 
@@ -32,7 +32,12 @@ and notifications**.
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
 | 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; slim USB-A head ≤ 7 mm angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
 | 4 | M2.5 × 5 screws (or the brass standoffs that came with the LCD) | Pi → tray |
-| — | PLA/PETG ~65 g | two printed parts (PETG recommended: the faceplate lip snaps on) |
+| 1 | Pimoroni Trackball Breakout (PIM447), 25 × 22 × 9.5 mm, I²C 0x0A | pointer |
+| 1 | PCF8574 I²C expander board (small, ≤ 18 × 16 mm), address 0x20 | reads the L / R buttons |
+| 1 | 3.3 V regulator board (e.g. AMS1117-3.3 mini) | keeps the I²C bus at 3.3 V |
+| 2 | 6 × 6 × 5 mm tactile switches | L / R mouse buttons |
+| 1 | Grove cable ~20 cm (cut one end) | Cardputer Grove → trackball add-on |
+| — | PLA/PETG ~80 g | two printed parts (PETG recommended: the faceplate lip snaps on) |
 
 ## 2. Wiring
 
@@ -51,7 +56,28 @@ and notifications**.
 * The same cable is a **serial port** (`/dev/cardputer`) the Pi uses to push stats/notifications.
 * The 3.5" LCD uses all 40 GPIO pins, so USB is also the cleanest choice.
 
-### Option B — wired UART (frees all USB ports)
+### Trackball add-on (needs Option A)
+
+The trackball and both buttons share the Cardputer's **Grove port** as one I²C bus. A small
+regulator keeps the bus at 3.3 V (the Cardputer's pins are not 5 V-safe, and the Grove port
+supplies 5 V).
+
+```
+ Cardputer Grove (left end)        3.3 V reg.          Trackball 0x0A      PCF8574 0x20
+   5V  (red)    ───────────────►  IN    OUT ──3.3V──►  3-5V          ──►  VCC
+   G2  (white)  SDA ─────────────────────────────────►  SDA           ──►  SDA
+   G1  (yellow) SCL ─────────────────────────────────►  SCL           ──►  SCL
+   GND (black)  ─────────────────► GND ──────────────►  GND           ──►  GND
+                                                                         P0 ── [L] ── GND
+                                                                         P1 ── [R] ── GND
+```
+
+Controls: roll = pointer (with acceleration) · press the ball or **L** = left click ·
+**R** = right click · hold **fn** and roll = scroll · the ball glows blue for new notifications.
+Mounting fixes (if up/down or left/right come out reversed) are the `TB_SWAP_XY`,
+`TB_INVERT_X`, `TB_INVERT_Y` constants in `firmware/cardputer-deck/src/main.cpp`.
+
+### Option B — wired UART (frees all USB ports; not with the trackball)
 
 The Pi 5 has a separate **3-pin UART connector** (JST-SH 1.0 mm, labelled `UART`, between
 the two micro-HDMI ports — visible in your photo). It is *not* covered by the LCD.
@@ -152,9 +178,11 @@ Files in `case/stl/`:
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **99 × 123 × 25 mm** (v6, the smallest the parts allow: 1.8 mm walls,
-1.6 mm floor and faceplate, 2.5 mm Pi standoffs, no screws or corner posts — the faceplate's
-0.8 mm lip snaps over a step on top of the walls). Fitted to measured Cardputer v1.1 photos: one
+Overall size **126 × 123 × 25 mm** (v7: the v6 screwless shell plus a trackball zone to the
+right of the keyboard: trackball on four posts, L / R buttons as flexure tabs in the faceplate
+pressing 6×6×5 mm switches on pedestals, a speaker grille in the faceplate, and a bay right of
+the Pi for the PCF8574 and regulator. Shell: 1.8 mm walls, 1.6 mm floor and faceplate,
+2.5 mm Pi standoffs, no screws — the faceplate's 0.8 mm lip snaps over a step on the walls). Fitted to measured Cardputer v1.1 photos: one
 faceplate over the whole top, the Cardputer resting on the floor ~1.5 mm below it, and the link cable fully
 hidden: lower-front USB-A → left channel (under the Ethernet jack) → trench inside the
 divider → USB-C on the Cardputer's **right** end. Ethernet and the other three USB ports
@@ -173,6 +201,7 @@ Edit the parameters at the top of `case/deck_case.py` and re-run `python deck_ca
 | `lcd_win_dx`, `lcd_win_dy` | 0, 0 | glass centre offset from the board centre (most 3.5" glass sits off-centre toward the FPC end) |
 | `cp_h` | 22 mm | tallest point of the Cardputer (the StampS3A block). Set from photos |
 | `cp_usb_from_back`, `cp_usb_z` | 10, 19 mm | USB-C on the right end: distance from the back edge, height above the bottom. Set from photos; check once |
+| `tb_hole_d`, `tb_ball_protrude` | 13, 0.6 mm | ball window in the faceplate and how far the ball sticks out. Check against your trackball before printing |
 
 Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay_min`, `cp_left_gap`, `chan_w`, `skin`, `trench_w`, `pi_cl`, `standoff_h`.
 
@@ -183,11 +212,14 @@ Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay
 3. Plug the LCD onto the GPIO header, add its standoffs.
 4. Plug the right-angle USB-A end into the **lower-front** USB port. Lay the cable down the
    left channel (under the Ethernet jack), then along the trench inside the divider.
-5. Plug the USB-C end into the **right end** of the Cardputer (cable pointing back into the
+5. Trackball add-on: wire it as above. Stick the trackball on its four posts with foam tape
+   (ball up), glue the two switches on the pedestals under the L / R tabs, put the regulator
+   and PCF8574 in the bay right of the Pi. Plug the Grove cable into the Cardputer's left
+   end and lay it along the trench.
+6. Plug the USB-C end into the **right end** of the Cardputer (cable pointing back into the
    trench) and lower the Cardputer into its pocket.
-6. Snap the faceplate on (its lip clicks over the step on the walls); pry it up at the
+7. Snap the faceplate on (its lip clicks over the step on the walls); pry it up at the
    front scoop to open. The Cardputer is captive; remove the
    faceplate to take it out.
-   Option B: run the 3 wires from the UART socket down the left channel and along the trench
-   to the Grove port on the Cardputer's **left** end. Rebuild the case with
-   `cp_left_gap = 6` first (6 mm wider) so the Grove plug fits.
+   Option B (no trackball): run the 3 wires from the UART socket down the left channel and
+   along the trench to the Grove port on the Cardputer's **left** end.

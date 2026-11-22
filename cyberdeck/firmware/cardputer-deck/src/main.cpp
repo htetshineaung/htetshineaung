@@ -12,11 +12,20 @@
 //        Fn+1..0     = F1..F10   Fn+- = F11    Fn+= = F12
 //        Fn+[ / ]    = Home / End              Fn+' = PageUp     Fn+Enter = PageDown
 //        opt = Super/GUI key.   G0 button (top) = next screen page.
+//
+// Trackball (USB mode): Pimoroni Trackball Breakout (I2C 0x0A) + PCF8574 (0x20) with the L / R
+// buttons on P0 / P1, all on the Grove port (G2 = SDA, G1 = SCL) powered by a 3.3 V regulator.
+//   roll = move pointer, press ball or L = left click, R = right click, fn + roll = scroll.
+//   The trackball LED glows blue for a few seconds when a notification arrives.
 
 #include <Arduino.h>
 #include <M5Cardputer.h>
 #include "USB.h"
 #include "USBHIDKeyboard.h"
+#if !DECK_LINK_UART
+#include "USBHIDMouse.h"
+#include <Wire.h>
+#endif
 
 #ifndef DECK_LINK_UART
 #define DECK_LINK_UART 0
@@ -30,6 +39,8 @@ static constexpr uint32_t TOAST_MS = 6000;
 static constexpr uint32_t DIM_AFTER_MS = 120000;
 
 USBHIDKeyboard Keyboard;
+bool fnHeld = false;
+static void wake();
 Stream *piLink = nullptr;
 M5Canvas canvas(&M5Cardputer.Display);
 
@@ -117,6 +128,101 @@ static void pollKeyboard() {
     }
   }
   sendKeys(mods, keys);
+  fnHeld = M5Cardputer.Keyboard.isPressed() && M5Cardputer.Keyboard.keysState().fn;
+  wake();
+}
+
+// ---------------------------------------------------------------- trackball + L/R buttons
+#if !DECK_LINK_UART
+USBHIDMouse Mouse;
+static constexpr int I2C_SDA = 2, I2C_SCL = 1;           // Grove G2 / G1
+static constexpr uint8_t TB_ADDR = 0x0A, PCF_ADDR = 0x20;
+static constexpr uint8_t TB_REG_LED = 0x00, TB_REG_LEFT = 0x04;   // LEFT,RIGHT,UP,DOWN,SWITCH
+static constexpr uint8_t TB_SWITCH_STATE = 0x80;
+static constexpr bool TB_SWAP_XY = false, TB_INVERT_X = false, TB_INVERT_Y = false;  // mounting fixes
+bool tbPresent = false, pcfPresent = false;
+uint8_t mouseButtons = 0;
+uint32_t ledUntil = 0;
+float scrollAcc = 0;
+
+static bool i2cPresent(uint8_t addr) {
+  Wire.beginTransmission(addr);
+  return Wire.endTransmission() == 0;
+}
+
+static void tbLed(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+  if (!tbPresent) return;
+  Wire.beginTransmission(TB_ADDR);
+  Wire.write(TB_REG_LED);
+  Wire.write(r); Wire.write(g); Wire.write(b); Wire.write(w);
+  Wire.endTransmission();
+}
+
+static void pointerInit() {
+  Wire.begin(I2C_SDA, I2C_SCL, 400000);
+  tbPresent = i2cPresent(TB_ADDR);
+  pcfPresent = i2cPresent(PCF_ADDR);
+  if (pcfPresent) {                       // PCF8574: write 1s = inputs with weak pull-ups
+    Wire.beginTransmission(PCF_ADDR);
+    Wire.write(0xFF);
+    Wire.endTransmission();
+  }
+  tbLed(0, 0, 0, 8);                      // faint white "on" glow
+}
+
+static int8_t accel(int v) {
+  int out = v * (abs(v) > 3 ? 4 : 2);
+  return (int8_t)constrain(out, -127, 127);
+}
+
+static void pollPointer() {
+  static uint32_t last = 0;
+  if (millis() - last < 8) return;        // ~125 Hz
+  last = millis();
+
+  int dx = 0, dy = 0;
+  uint8_t buttons = 0;
+  if (tbPresent) {
+    Wire.beginTransmission(TB_ADDR);
+    Wire.write(TB_REG_LEFT);
+    if (Wire.endTransmission(false) == 0 && Wire.requestFrom((int)TB_ADDR, 5) == 5) {
+      uint8_t d[5];
+      for (int i = 0; i < 5; i++) d[i] = Wire.read();
+      dx = (int)d[1] - (int)d[0];         // right - left
+      dy = (int)d[3] - (int)d[2];         // down - up
+      if (d[4] & TB_SWITCH_STATE) buttons |= MOUSE_LEFT;
+    }
+    if (TB_SWAP_XY) { int t = dx; dx = dy; dy = t; }
+    if (TB_INVERT_X) dx = -dx;
+    if (TB_INVERT_Y) dy = -dy;
+  }
+  if (pcfPresent && Wire.requestFrom((int)PCF_ADDR, 1) == 1) {
+    uint8_t p = Wire.read();              // buttons pull P0/P1 to GND
+    if (!(p & 0x01)) buttons |= MOUSE_LEFT;
+    if (!(p & 0x02)) buttons |= MOUSE_RIGHT;
+  }
+
+  if (dx || dy) {
+    if (fnHeld) {                         // fn + roll = scroll
+      scrollAcc += -dy * 0.5f;
+      int8_t w = (int8_t)scrollAcc;
+      scrollAcc -= w;
+      if (w) Mouse.move(0, 0, w);
+    } else {
+      Mouse.move(accel(dx), accel(dy));
+    }
+  }
+  for (uint8_t b : {(uint8_t)MOUSE_LEFT, (uint8_t)MOUSE_RIGHT}) {
+    if ((buttons & b) != (mouseButtons & b)) (buttons & b) ? Mouse.press(b) : Mouse.release(b);
+  }
+  mouseButtons = buttons;
+  if (dx || dy || buttons) wake();
+
+  if (ledUntil && millis() > ledUntil) { ledUntil = 0; tbLed(0, 0, 0, 8); }
+}
+#endif
+
+static void wake() {
   lastActivity = millis();
   if (dimmed) { dimmed = false; M5Cardputer.Display.setBrightness(brightness); }
 }
@@ -154,6 +260,10 @@ static void handleLine(const String &line) {
       lastActivity = millis();
       if (dimmed) { dimmed = false; M5Cardputer.Display.setBrightness(brightness); }
       M5Cardputer.Speaker.tone(2200, 60);
+#if !DECK_LINK_UART
+      tbLed(0, 60, 255, 0);
+      ledUntil = millis() + 4000;
+#endif
       break;
     }
     case 'B':
@@ -248,8 +358,8 @@ static void drawHelp() {
   canvas.setTextColor(C_FG);
   const char *lines[] = {"; . , /   arrows      `  Esc", "1..0 F1-F10  - F11  = F12",
                          "[ ] Home/End   ' PgUp  Ent PgDn", "Del Delete     opt = Super",
-                         "G0 button: next page"};
-  for (int i = 0; i < 5; i++) canvas.drawString(lines[i], 4, 40 + i * 18);
+                         "ball/L click  R right  fn+ball scroll", "G0 button: next page"};
+  for (int i = 0; i < 6; i++) canvas.drawString(lines[i], 4, 38 + i * 16);
 }
 
 static void drawToast() {
@@ -296,7 +406,9 @@ void setup() {
   USB.manufacturerName("M5Stack");
   USB.productName("Cardputer Deck");
   Keyboard.begin();
+  Mouse.begin();
   USB.begin();
+  pointerInit();
   Serial.begin(LINK_BAUD);
   piLink = &Serial;
 #endif
@@ -306,12 +418,15 @@ void setup() {
 void loop() {
   M5Cardputer.update();
   pollKeyboard();
+#if !DECK_LINK_UART
+  pollPointer();
+#endif
   pollLink();
 
   if (M5Cardputer.BtnA.wasPressed()) {
     page = (page + 1) % PAGES;
     toastUntil = 0;
-    lastActivity = millis();
+    wake();
     dirty = true;
   }
   if (!dimmed && millis() - lastActivity > DIM_AFTER_MS) {
