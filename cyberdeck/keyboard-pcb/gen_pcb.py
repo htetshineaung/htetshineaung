@@ -32,9 +32,9 @@ def mm(v):
 
 def build():
     board = pcbnew.BOARD()
-    board.SetCopperLayerCount(4)                        # F.Cu / In1 GND plane / In2 3V3 plane / B.Cu
-    for ly in (pcbnew.In1_Cu, pcbnew.In2_Cu):
-        board.SetLayerType(ly, pcbnew.LT_POWER)          # planes only: the autorouter keeps off them
+    board.SetCopperLayerCount(4)                        # F.Cu / In1 GND plane / In2 signals + GND pour / B.Cu
+    board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)   # solid ground: the autorouter keeps off it
+    board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_SIGNAL)  # third routing layer (3V3 is routed as tracks)
     ds = board.GetDesignSettings()
     ds.SetBoardThickness(mm(1.0))
     try:                                   # (KiCad 8+ keeps net classes in the .kicad_pro instead)
@@ -129,8 +129,8 @@ def build():
         fp.SetReference(f"H{i + 1}"); fp.SetPosition(P(hx, hy)); fp.Reference().SetVisible(False)
         board.Add(fp)
 
-    # ground pour on the outer layers, solid GND plane on In1, solid 3V3 plane on In2
-    for layer, net in ((pcbnew.F_Cu, "GND"), (pcbnew.B_Cu, "GND"), (pcbnew.In1_Cu, "GND"), (pcbnew.In2_Cu, "+3V3")):
+    # solid GND plane on In1; GND pours fill the spare copper on the three routing layers
+    for layer, net in ((pcbnew.F_Cu, "GND"), (pcbnew.B_Cu, "GND"), (pcbnew.In1_Cu, "GND"), (pcbnew.In2_Cu, "GND")):
         z = pcbnew.ZONE(board)
         z.SetLayer(layer); z.SetNet(netinfo[net]); z.SetIsFilled(False)
         z.SetLocalClearance(mm(0.25)); z.SetMinThickness(mm(0.2))

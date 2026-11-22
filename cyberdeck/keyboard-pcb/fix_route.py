@@ -7,7 +7,7 @@ then reconnects every net it ripped up.
 
 Each REF.PAD is routed to the nearest copper (pad, track or via) of the same net that is not
 already connected to it.  Grid 0.05 mm, track 0.15 mm, the board's own clearance, vias 0.5/0.3 mm; inner layers are planes
-(vias pass through them), so only the outer layers are searched.  Refill zones afterwards.
+(vias pass through them), so only the outer layers are searched (plus In2.Cu with --inner).  Refill zones afterwards.
 """
 import heapq
 import math
@@ -38,7 +38,8 @@ def _clearance():
 
 
 CLR = _clearance()
-LAYERS = (pcbnew.F_Cu, pcbnew.B_Cu)
+# --inner: also route on In2.Cu (the inner routing layer; its ground pour flows around tracks)
+LAYERS = (pcbnew.F_Cu, pcbnew.B_Cu) + ((pcbnew.In2_Cu,) if "--inner" in sys.argv else ())
 
 
 def seg_dist(px, py, x0, y0, x1, y1):
@@ -72,7 +73,8 @@ def collect(net):
         else:
             a, b = t.GetStart(), t.GetEnd()
             d = ("s", (T(a.x), T(a.y), T(b.x), T(b.y), T(t.GetWidth()) / 2), t)
-            (tgt if same else obs)[t.GetLayer()].append(d)
+            if t.GetLayer() in obs:
+                (tgt if same else obs)[t.GetLayer()].append(d)
     edges = []
     for d in board.GetDrawings():
         if d.GetLayer() == pcbnew.Edge_Cuts:
@@ -158,7 +160,7 @@ def route(ref, num):
     pad = next(p for p in fp.Pads() if p.GetNumber() == num)
     net = pad.GetNetCode()
     obs, tgt, edges = collect(net)
-    idx = [Index(obs[LAYERS[0]]), Index(obs[LAYERS[1]])]
+    idx = [Index(obs[ly]) for ly in LAYERS]
     hidx = Index(obs.get("hole", []))
     eidx = Index([("s", (*e, 0.0), None) for e in edges])
     sx, sy = T(pad.GetPosition().x), T(pad.GetPosition().y)
@@ -195,7 +197,7 @@ def route(ref, num):
         if (ix, iy) in vcache:
             return vcache[(ix, iy)]
         x, y = box[0] + ix * G, box[1] + iy * G
-        good = all(dist_to(it, x, y) >= VIA_D / 2 + CLR for li in (0, 1) for it in idx[li].near(x, y))
+        good = all(dist_to(it, x, y) >= VIA_D / 2 + CLR for li in range(len(LAYERS)) for it in idx[li].near(x, y))
         good = good and all(dist_to(it, x, y) >= VIA_DR / 2 + 0.25 for it in hidx.near(x, y))
         vcache[(ix, iy)] = good
         return good
@@ -205,9 +207,17 @@ def route(ref, num):
         return any(dist_to(it, x, y) <= 0.0 for it in goals[LAYERS[li]])
 
     six, siy, sli = round((sx - box[0]) / G), round((sy - box[1]) / G), LAYERS.index(slayer)
-    start = (six, siy, sli)
-    openq = [(0, 0, start, None)]
-    came, gbest = {}, {start: 0}
+    # start from every point of the copper already joined to the pad (pad, its stubs, its vias)
+    starts = {(six, siy, sli)}
+    for li_, ly in enumerate(LAYERS):
+        for it in tgt[ly]:
+            if key(it[2]) in own:
+                for (x, y) in points(it):
+                    jx, jy = round((x - box[0]) / G), round((y - box[1]) / G)
+                    if 0 <= jx < nx and 0 <= jy < ny:
+                        starts.add((jx, jy, li_))
+    openq = [(0, 0, st, None) for st in starts]
+    came, gbest = {}, {st: 0 for st in starts}
     moves = [(1, 0, 1), (-1, 0, 1), (0, 1, 1), (0, -1, 1), (1, 1, 1.414), (1, -1, 1.414), (-1, 1, 1.414), (-1, -1, 1.414)]
     end = None
     steps = 0
@@ -219,10 +229,10 @@ def route(ref, num):
         steps += 1
         ix, iy, li = cur
         # leaving the start pad: allow cells inside it even though the pad is "same net"
-        if at_goal(ix, iy, li) and math.hypot((ix - six) * G, (iy - siy) * G) > 0.5:
+        if at_goal(ix, iy, li):
             end = cur; break
         cand = [((ix + dx, iy + dy, li), c) for dx, dy, c in moves]
-        cand.append(((ix, iy, 1 - li), 25))                 # via
+        cand += [((ix, iy, lj), 25) for lj in range(len(LAYERS)) if lj != li]   # via
         for nxt, c in cand:
             jx, jy, lj = nxt
             if not (0 <= jx < nx and 0 <= jy < ny) or nxt in came:
@@ -247,7 +257,8 @@ def route(ref, num):
     # emit: split at layer changes (vias), then pull each run tight with line-of-sight checks
     netinfo = pad.GetNet()
     pts = [(box[0] + p[0] * G, box[1] + p[1] * G, p[2]) for p in path]
-    pts[0] = (sx, sy, pts[0][2])
+    if path[0][:2] == (six, siy):
+        pts[0] = (sx, sy, pts[0][2])
 
     def free_xy(x, y, li):
         if not all(dist_to(e, x, y) > TW / 2 + 0.3 for e in eidx.near(x, y)):

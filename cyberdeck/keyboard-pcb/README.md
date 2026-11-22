@@ -1,8 +1,8 @@
 # Clamshell keyboard PCB (phase 2)
 
 Our own thumb keyboard for the Pi 5 Clamshell: RP2040, 42 keys + mouse L/R (45 switches: the space bar has two) on 1.5 mm tactile
-switches, a built-in hall-effect trackball, OLED pads, battery voltage sense. 4-layer (inner GND and 3V3
-planes), 1.0 mm, 133 × 72 mm,
+switches, a built-in hall-effect trackball, OLED pads, battery voltage sense. 4-layer (In1 solid GND plane,
+In2 extra routing layer), 1.0 mm, 133 × 72 mm,
 shaped to drop into the clamshell base under the deck.
 
 | File | What it is |
@@ -30,13 +30,16 @@ KICAD7_FOOTPRINT_DIR=/usr/share/kicad/footprints /usr/bin/python3 gen_pcb.py
      pre-routes the regular key matrix (columns on top, rows on the bottom, locked).
   2. `stitch_gnd.py clam_kbd_rN.kicad_pcb clam_kbd_rN.kicad_pcb x.dsn`: one via per small-part
      GND pad, a 3x3 via grid in the RP2040 exposed pad, and the TESTEN stub.
-  3. `export_dsn.py clam_kbd_rN.kicad_pcb clam_kbd_rN.dsn`: DSN with the pours hidden, so
-     Freerouting routes GND as tracks too.
+  3. (the DSN written by step 2 is the autorouter input; `export_dsn.py` can hide the pours)
   4. `java -Djava.awt.headless=true -jar freerouting-2.5.0.jar --gui.enabled=false
      -de clam_kbd_rN.dsn -do clam_kbd_rN.ses -mp 60 -mt 6`
   5. Import the `.ses` (`pcbnew.ImportSpecctraSES`), then `stitch_gnd.py ... --grid` for a 3 mm
      stitching-via grid, then `kicad-cli pcb drc --refill-zones --save-board`.
-  6. `gnd_islands.py board.kicad_pcb` lists any ground islands not tied to the main plane.
+  6. `fix_route.py board board U1.6 U1.7 --inner [--rip 0.6]`: grid router for any pins the
+     autorouter leaves open (can rip up nearby tracks and reconnect them).
+  7. `gnd_islands.py board.kicad_pcb` lists any ground islands; `export_jlc.sh board` gates on DRC and
+     writes the Gerber zip.
+  Result (rev A): 0 unconnected, 0 DRC errors, 1171 segments on F/In2/B, 215 vias.
   Rules (`clam_kbd_rN.kicad_pro`): 0.15 mm track and clearance, 0.5/0.3 mm vias, 0.3 mm to the
   edge; all within JLCPCB's standard 4-layer process (the router's few 0.09 mm neck-downs at the
   RP2040 pins are inside JLCPCB's 0.09 mm multilayer limit).

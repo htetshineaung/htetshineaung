@@ -4,7 +4,7 @@ Clamshell keyboard PCB - circuit definition (single source of truth).
 Everything here feeds both generated files: the KiCad schematic (gen_sch.py) and the KiCad
 PCB (gen_pcb.py), so they cannot disagree.
 
-Board: 4-layer (GND and 3V3 inner planes), 1.0 mm FR4, sits under the clamshell deck (see ../clamshell/clamshell.py).
+Board: 4-layer (In1 solid GND plane, In2 extra routing layer), 1.0 mm FR4, sits under the clamshell deck (see ../clamshell/clamshell.py).
   Top:    46 tactile switches (XKB TS-1187A 5.1x5.1x1.5 mm), OLED pin pads, BOOT/RESET, LED,
           and the built-in trackball: a 4-roller hall-effect mechanism (BlackBerry-style, as in
           the Pimoroni trackball) sits on the board, 4 DRV5033 omnipolar hall switches read its roller magnets,

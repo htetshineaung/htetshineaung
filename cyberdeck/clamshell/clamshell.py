@@ -27,6 +27,9 @@ Printed parts:
   clam_lid_bezel.stl   screen bezel (front face down)
 Axles: 2x M3x30 screws + nyloc nuts + nylon washers (set the hinge friction).
 
+Clear version: print base, deck, lid and bezel in clear PETG / polycarbonate (sand + clear coat) or
+order them in clear SLA resin; key mat in clear TPU 95A.  render_clear.py renders it with the parts inside.
+
 !! Concept dimensions. Check before printing: the screen stack thickness (`scr_t`), Pi cooler height
    (`pi_stack_top`), the exact tactile switch and the battery contacts you use.
 """
