@@ -30,10 +30,10 @@ and notifications**.
 | 1 | 3.5" 480×320 SPI GPIO LCD (the one in your photo) | plugs onto the 40-pin header |
 | 1 | Low-profile cooler (Active Cooler or heatsink) | must fit under the LCD |
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
-| 1 | **USB-A → USB-C data cable, right-angle at both ends** (~15 cm; USB-A end angled up/down) | the only wire; lives in the hidden left channel |
+| 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; USB-A end angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
 | 4 | M2.5 × 6 screws (or the brass standoffs that came with the LCD) | Pi → tray |
 | 4 | M2.5 × 8 self-tapping screws | faceplate → tray |
-| — | PLA/PETG ~160 g | two printed parts |
+| — | PLA/PETG ~140 g | two printed parts |
 
 ## 2. Wiring
 
@@ -153,10 +153,11 @@ Files in `case/stl/`:
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **108 × 131 × 28 mm**. v2: one faceplate over the whole top, the Cardputer
-sits flush with it, and the link cable is hidden in a channel along the left side
-(the lower-front USB-A port is used internally; Ethernet and the other three USB ports
-stay reachable through recessed openings).
+Overall size **108 × 133 × 28 mm**. v3 (fitted to measured Cardputer v1.1 photos): one
+faceplate over the whole top, the Cardputer inset 2 mm below it, and the link cable fully
+hidden: lower-front USB-A → left channel (under the Ethernet jack) → trench inside the
+divider → USB-C on the Cardputer's **right** end. Ethernet and the other three USB ports
+stay reachable; a grille in the right wall lines up with the Cardputer's speaker.
 
 ![tray](case/preview/deck_tray.png)
 
@@ -169,17 +170,22 @@ Edit the parameters at the top of `case/deck_case.py` and re-run `python deck_ca
 |---|---|---|
 | `stack_above_pcb` | 17.5 mm | Pi PCB top surface → top of the LCD glass (with your cooler) |
 | `lcd_win_dx`, `lcd_win_dy` | 0, 0 | glass centre offset from the board centre (most 3.5" glass sits off-centre toward the FPC end) |
-| `cp_usb_y_frac` | 0.62 | where the USB-C sits along the Cardputer's **left** side (fraction from its front); the cable enters there from the hidden channel |
+| `cp_h` | 22 mm | tallest point of the Cardputer (the StampS3A block). Set from photos |
+| `cp_usb_from_back`, `cp_usb_z` | 10, 19 mm | USB-C on the right end: distance from the back edge, height above the bottom. Set from photos; check once |
 
-Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `chan_w` (cable channel width), `pi_cl`, `standoff_h`.
+Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay_w`, `cp_left_gap`, `chan_w`, `trench_w`, `pi_cl`, `standoff_h`.
 
 ### Assembly
 
 1. Flash the Cardputer and install the Pi software first (easier outside the case).
 2. Fit the cooler, screw the Pi into the tray standoffs (USB/Ethernet toward the **left** side).
 3. Plug the LCD onto the GPIO header, add its standoffs.
-4. Plug the right-angle cable into the **lower-front** USB-A port, lay it in the left channel
-   (it passes under the Ethernet jack) and bring the USB-C end out at the Cardputer pocket.
-5. Plug in the Cardputer, drop it into its pocket (top flush with the faceplate).
-6. Screw the faceplate on (4 × M2.5 self-tappers into the corner pillars).
-   For Option B, route the Grove cable through the tunnel in the divider instead.
+4. Plug the right-angle USB-A end into the **lower-front** USB port. Lay the cable down the
+   left channel (under the Ethernet jack), then along the trench inside the divider.
+5. Plug the USB-C end into the **right end** of the Cardputer (cable pointing back into the
+   trench) and lower the Cardputer into its pocket.
+6. Screw the faceplate on (4 × M2.5 self-tappers). The Cardputer is captive; remove the
+   faceplate to take it out.
+   Option B: run the 3 wires from the UART socket down the left channel and along the trench
+   to the Grove port on the Cardputer's **left** end (about 7 mm of room: bend the wires back
+   right at the plug).
