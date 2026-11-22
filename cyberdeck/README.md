@@ -32,8 +32,7 @@ and notifications**.
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
 | 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; slim USB-A head ≤ 7 mm angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
 | 4 | M2.5 × 5 screws (or the brass standoffs that came with the LCD) | Pi → tray |
-| 4 | M2 × 6 self-tapping screws | faceplate → corner posts |
-| — | PLA/PETG ~80 g | two printed parts |
+| — | PLA/PETG ~65 g | two printed parts (PETG recommended: the faceplate lip snaps on) |
 
 ## 2. Wiring
 
@@ -153,9 +152,9 @@ Files in `case/stl/`:
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **104 × 125 × 25 mm** (v5, as slim as the parts allow: 1.8 mm walls all
-round, 1.6 mm floor and faceplate, 2.5 mm Pi standoffs, faceplate screwed into four small
-corner posts). Fitted to measured Cardputer v1.1 photos: one
+Overall size **99 × 123 × 25 mm** (v6, the smallest the parts allow: 1.8 mm walls,
+1.6 mm floor and faceplate, 2.5 mm Pi standoffs, no screws or corner posts — the faceplate's
+0.8 mm lip snaps over a step on top of the walls). Fitted to measured Cardputer v1.1 photos: one
 faceplate over the whole top, the Cardputer resting on the floor ~1.5 mm below it, and the link cable fully
 hidden: lower-front USB-A → left channel (under the Ethernet jack) → trench inside the
 divider → USB-C on the Cardputer's **right** end. Ethernet and the other three USB ports
@@ -186,8 +185,9 @@ Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay
    left channel (under the Ethernet jack), then along the trench inside the divider.
 5. Plug the USB-C end into the **right end** of the Cardputer (cable pointing back into the
    trench) and lower the Cardputer into its pocket.
-6. Screw the faceplate on (4 × M2 × 6 self-tappers into the corner posts). The Cardputer is captive; remove the
+6. Snap the faceplate on (its lip clicks over the step on the walls); pry it up at the
+   front scoop to open. The Cardputer is captive; remove the
    faceplate to take it out.
    Option B: run the 3 wires from the UART socket down the left channel and along the trench
-   to the Grove port on the Cardputer's **left** end (only ~5 mm of room: use a slim or
-   right-angle Grove plug).
+   to the Grove port on the Cardputer's **left** end. Rebuild the case with
+   `cp_left_gap = 6` first (6 mm wider) so the Grove plug fits.

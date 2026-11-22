@@ -1,10 +1,11 @@
 """
-Pi 5 + 3.5" GPIO LCD + M5Stack Cardputer "mini-deck" case  -  v5 (thin walls)
+Pi 5 + 3.5" GPIO LCD + M5Stack Cardputer "mini-deck" case  -  v6 (screwless, minimum footprint)
 
-v5 = slimmest version so far:
+v6 = smallest version so far:
   * 25.1 mm thick: 1.6 mm floor, 2.5 mm Pi standoffs, 1.6 mm faceplate, Cardputer on the floor.
-  * 1.8 mm outer walls all round. Faceplate screws go into small round posts tucked into
-    the spare corners (M2 self-tapping), not into thick walls.
+  * 1.8 mm outer walls, no screws and no corner posts: the faceplate has a 0.8 mm lip that
+    snaps over a matching step on top of the walls (flush outside, small catches inside).
+  * Footprint is the boards plus walls and the cable route, nothing else.
   * Cable fully hidden: Pi lower-front USB-A (slim right-angle plug) -> 7.5 mm left channel,
     under the Ethernet jack -> trench inside the divider -> plug bay right of the Cardputer,
     where its USB-C is (right end, near the back, near the top).
@@ -13,21 +14,21 @@ Fitted to measured Cardputer v1.1 photos (USB-C right end, Grove left end, ~22 m
 Top view (user sits at the bottom):
 
    +---------------------------------------------+
-   |o          back: USB-C power, 2x HDMI, UART o|
+   |           back: USB-C power, 2x HDMI, UART  |
    |  +---------------------------------------+  |
    |ch|  3.5" LCD window (Pi 5 underneath)     |  |  right: microSD / power button + vents
    |an+---------------------------------------+  |
    |==========  divider cable trench  ==========|
    | +-----------------------------------+ plug |
    | | Cardputer (inset ~1.5 mm)          |=bay  |  <- USB-C on its right end, speaker grille
-   |o+-----------------------------------+     o|
+   | +-----------------------------------+      |
    +---------------( scoop )---------------------+
 
 Printed parts:
   deck_tray.stl       body. Print upright (floor on bed), no supports.
   deck_faceplate.stl  top plate. Print top face DOWN, no supports.
 
-Hardware: 4x M2.5x5 (Pi -> standoffs), 4x M2x6 self-tapping (faceplate -> posts),
+Hardware: 4x M2.5x5 (Pi -> standoffs). Faceplate snaps on (pry up at the front scoop).
           1x USB-A (slim right-angle, head <= 7 mm, "up/down") to USB-C (right-angle,
           "left/right") data cable, ~20 cm.
 
@@ -43,7 +44,7 @@ import cadquery as cq
 pi_w, pi_d, pi_pcb_t = 85.0, 56.0, 1.6
 pi_holes = [(3.5, 3.5), (61.5, 3.5), (3.5, 52.5), (61.5, 52.5)]  # HDMI edge = y0
 pi_cl = 0.8                  # side / front clearance around the board
-pi_cl_back = 2.3             # extra room at the back so the back-left screw post clears the USB plugs
+pi_cl_back = 0.8
 port_overhang = 2.5          # USB/Ethernet jacks stick out past the PCB edge
 eth_y, usb_front_y, usb_back_y = 45.75, 29.1, 10.2   # jack centres along the Pi edge (Pi coords)
 
@@ -64,7 +65,7 @@ cp_cl = 0.4
 cp_usb_from_back = 10.0      # USB-C centre, RIGHT end, from the Cardputer's back edge
 cp_usb_z = 19.0              # USB-C centre height above the Cardputer's bottom
 cp_grove_from_back = 9.0     # Grove port centre, LEFT end, from the back edge
-cp_left_gap = 5.0            # room left of the Cardputer (corner post + Grove plug for option B)
+cp_left_gap = 0.0            # set ~6 for option B (room for the Grove plug on the left end)
 plug_bay_min = 9.5           # room right of the Cardputer for the right-angle USB-C head
 plug_relief = 1.0            # pocket in the faceplate underside over the USB-C head
 usb_c_half_h = 3.3
@@ -76,12 +77,13 @@ floor_t = 1.6
 chan_w = 7.5                 # left channel: slim right-angle USB-A head
 trench_w = 5.0
 trench_wall = 1.2
-corner_r = 4.0
+corner_r = 3.0
 bottom_chamfer = 1.2
 lid_t = 1.6
 lid_chamfer = 0.6
-post_od, post_pilot = 4.2, 1.7     # faceplate posts, M2 self-tapping
-lid_screw_d, lid_head_d = 2.3, 4.0
+lip_t, lip_h = 0.8, 3.0      # faceplate lip over the wall step
+lip_cl = 0.1                 # fit clearance lip <-> step
+catch_h, catch_d, catch_len = 0.8, 0.3, 8.0   # snap bumps on the lip / grooves in the step
 scoop_r, scoop_depth, scoop_w = 14.0, 7.0, 28.0
 
 # --- Ventilation ---
@@ -98,7 +100,7 @@ cx0 = skin + cp_left_gap                            # Cardputer pocket
 cp_bay_w, cp_bay_d = cp_w + 2 * cp_cl, cp_d + 2 * cp_cl
 cx1 = cx0 + cp_bay_w
 W = max(cx1 + plug_bay_min + skin,                  # Cardputer row
-        x_pcb + pi_w + pi_cl + post_od + skin)      # Pi row incl. right posts
+        x_pcb + pi_w + pi_cl + skin)                # Pi row
 y_cp0 = skin
 y_cp_back = y_cp0 + cp_cl + cp_d
 ty0 = y_cp0 + cp_bay_d + trench_wall                # cable trench
@@ -135,15 +137,36 @@ def cyl(x, y, z0, z1, d):
     return cq.Workplane("XY").circle(d / 2).extrude(z1 - z0).translate((x, y, z0))
 
 
-pr = post_od / 2 - 0.3        # posts sink 0.3 mm into the walls (no tangent faces)
-posts = [
-    (skin + pr, skin + pr),                    # front-left, in the gap left of the Cardputer
-    (W - skin - pr, skin + pr),                # front-right, right of the Cardputer
-    (skin + pr, D - skin - pr),                # back-left, behind the back USB pair
-    (W - skin - pr, D - skin - pr),            # back-right, right of the Pi
-]
-_, usb_back_far = pi_to_dev(0, usb_back_y - 8.0)
-assert D - skin - post_od >= usb_back_far - 0.01, "back-left post hits the USB plugs"
+step_z = H - lip_h                                  # top of the wall is stepped for the lip
+# snap catches: (x, y, side) along the straight parts of the walls, clear of openings
+catches = [(skin / 2, 22.0, "x"), (skin / 2, y_pi0 - 2.0, "x"),
+           (W - skin / 2, 14.0, "x"), (W - skin / 2, D - 8.0, "x"),
+           (W * 0.22, skin / 2, "y"), (W * 0.78, skin / 2, "y"),
+           (W * 0.25, D - skin / 2, "y")]
+
+
+def outline(inset, z0, z1):
+    r = max(0.2, corner_r - inset)
+    return (cq.Workplane("XY").rect(W - 2 * inset, D - 2 * inset).extrude(z1 - z0)
+            .edges("|Z").fillet(r).translate((W / 2, D / 2, z0)))
+
+
+def catch(x, y, side, grow, z_mid):
+    """Bump (grow=0) or groove (grow>0) straddling the lip/step interface."""
+    L, d, h = catch_len + grow, catch_d + grow, catch_h + grow
+    edge = lip_t                                   # interface sits lip_t in from the outside
+    if side == "x":
+        xi = edge if x < W / 2 else W - edge
+        sgn = 1 if x < W / 2 else -1
+        x0, x1 = sorted((xi, xi + sgn * d))
+        return box(x0, y - L / 2, z_mid - h / 2, x1, y + L / 2, z_mid + h / 2)
+    yi = edge if y < D / 2 else D - edge
+    sgn = 1 if y < D / 2 else -1
+    y0, y1 = sorted((yi, yi + sgn * d))
+    return box(x - L / 2, y0, z_mid - h / 2, x + L / 2, y1, z_mid + h / 2)
+
+
+catch_z = step_z + lip_h * 0.45
 
 # ============================================================
 # TRAY
@@ -161,17 +184,18 @@ tray = tray.cut(box(skin, ty0, floor_t, W - skin, ty1, H + eps))
 tray = tray.cut(box(cx0, y_cp0, cp_floor_z, cx1, y_cp0 + cp_bay_d, H + eps))
 # Plug bay right of the Cardputer, open into the trench
 tray = tray.cut(box(cx1 - eps, cp_usb_y - 7.0, cp_floor_z + 3.0, W - skin, ty0 + eps, H + eps))
-# Grove room left of the Cardputer (option B), open into the trench
-tray = tray.cut(box(skin, cp_grove_y - 6.0, cp_floor_z + 1.0, cx0 + eps, ty0 + eps, H + eps))
+# Grove room left of the Cardputer (option B only, when cp_left_gap is set)
+if cp_left_gap > 0.5:
+    tray = tray.cut(box(skin, cp_grove_y - 6.0, cp_floor_z + 1.0, cx0 + eps, ty0 + eps, H + eps))
 # Speaker grille through the right wall, in line with the Cardputer speaker
 for i in range(4):
     y = cp_usb_y - 4.5 + i * 3.0
     tray = tray.cut(box(W - skin - eps, y, cp_floor_z + spk_z - 4.0, W + eps, y + 1.6, cp_floor_z + spk_z + 4.0))
 
-# Faceplate posts (added back after the cavities were cut)
-for x, y in posts:
-    tray = tray.union(cyl(x, y, floor_t - eps, H, post_od))
-    tray = tray.cut(cyl(x, y, H - 10.0, H + eps, post_pilot))
+# Step around the top of the outer wall for the faceplate lip, plus catch grooves
+tray = tray.cut(outline(0, step_z, H + eps).cut(outline(lip_t + lip_cl, step_z - eps, H + 2 * eps)))
+for x, y, side in catches:
+    tray = tray.cut(catch(x, y, side, 0.15, catch_z))
 
 # Pi standoffs
 for hx, hy in pi_holes:
@@ -186,8 +210,8 @@ def left_open(pi_y, half_w, z0, z1):
     return box(-eps, yc - half_w, z0, skin + eps, yc + half_w, z1)
 
 tray = tray.cut(left_open(eth_y, 8.5, pcb_top - 0.5, pcb_top + 15.0))         # Ethernet
-tray = tray.cut(left_open(usb_front_y, 8.0, pcb_top + 8.0, pcb_top + 16.8))   # upper USB, front pair
-tray = tray.cut(left_open(usb_back_y, 8.0, pcb_top - 0.5, pcb_top + 16.8))    # both USB, back pair
+tray = tray.cut(left_open(usb_front_y, 8.0, pcb_top + 8.0, H + eps))         # upper USB, front pair (open to the lip)
+tray = tray.cut(left_open(usb_back_y, 8.0, pcb_top - 0.5, H + eps))          # both USB, back pair (open to the lip)
 
 # --- Back: USB-C power, RTC JST, micro-HDMI x2, UART JST (plug over-moulds go through)
 bx0, _ = pi_to_dev(47.0, 0)
@@ -195,7 +219,7 @@ bx1, _ = pi_to_dev(3.0, 0)
 tray = tray.cut(box(bx0 - 1.5, D - skin - eps, pcb_z - 1.5, bx1 + 1.5, D + eps, pcb_top + 9.0))
 for i in range(int((bx1 - bx0) // wall_vent_pitch)):
     x = bx0 + 2.5 + i * wall_vent_pitch
-    tray = tray.cut(box(x, D - skin - eps, pcb_top + 11.0, x + wall_vent_w, D + eps, H - 2.0))
+    tray = tray.cut(box(x, D - skin - eps, pcb_top + 11.0, x + wall_vent_w, D + eps, step_z - 0.8))
 
 # --- Right: microSD + power button, cooler exhaust
 _, sy0 = pi_to_dev(0, 50.0)
@@ -203,7 +227,7 @@ _, sy1 = pi_to_dev(0, 6.0)
 tray = tray.cut(box(W - skin - eps, sy0, floor_t + 0.6, W + eps, sy1, pcb_top + 4.0))
 for i in range(int((sy1 - sy0) // wall_vent_pitch)):
     y = sy0 + 2.5 + i * wall_vent_pitch
-    tray = tray.cut(box(W - skin - eps, y, pcb_top + 6.5, W + eps, y + wall_vent_w, H - 2.0))
+    tray = tray.cut(box(W - skin - eps, y, pcb_top + 6.5, W + eps, y + wall_vent_w, step_z - 0.8))
 
 # --- Floor vents under the Pi
 for i in range(floor_slot_n):
@@ -223,7 +247,9 @@ tray = tray.cut(scoop())
 # ============================================================
 # FACEPLATE (modelled in place)
 # ============================================================
-face = box(0, 0, H, W, D, TOP).edges("|Z").fillet(corner_r)
+face = outline(0, H, TOP).union(outline(0, step_z, H + eps).cut(outline(lip_t, step_z - eps, H + 2 * eps)))
+for x, y, side in catches:
+    face = face.union(catch(x, y, side, 0.0, catch_z))
 face = face.cut(cq.Workplane("XY").rect(lcd_win_w, lcd_win_d).extrude(lid_t + 2 * eps)
                 .edges("|Z").fillet(2.0).translate((win_cx, win_cy, H - eps)))
 face = face.cut(cq.Workplane("XY").rect(cp_bay_w, cp_bay_d).extrude(lid_t + 2 * eps)
@@ -232,9 +258,8 @@ face = face.cut(cq.Workplane("XY").rect(cp_bay_w, cp_bay_d).extrude(lid_t + 2 * 
 face = face.faces(">Z").edges().chamfer(lid_chamfer)
 face = face.cut(box(cx1 - 0.5, cp_usb_y - 7.0, H - eps, W - skin, ty1, H + plug_relief))
 face = face.cut(scoop())
-for x, y in posts:
-    face = face.cut(cyl(x, y, H - eps, TOP + eps, lid_screw_d))
-    face = face.cut(cyl(x, y, TOP - 0.6, TOP + eps, lid_head_d))
+face = face.cut(left_open(usb_front_y, 8.0, pcb_top + 8.0, H + eps))
+face = face.cut(left_open(usb_back_y, 8.0, pcb_top - 0.5, H + eps))
 
 # ============================================================
 # EXPORT
@@ -250,6 +275,6 @@ if __name__ == "__main__":
                         tolerance=0.01, angularTolerance=0.1)
     cq.exporters.export(tray, os.path.join(out, "deck_tray.step"))
     cq.exporters.export(face_print, os.path.join(out, "deck_faceplate.step"))
-print(f"Case v5: {W:.1f} x {D:.1f} x {TOP:.1f} mm | x_pcb={x_pcb:.1f} pi_oy={pi_oy:.1f} "
+print(f"Case v6: {W:.1f} x {D:.1f} x {TOP:.1f} mm | x_pcb={x_pcb:.1f} pi_oy={pi_oy:.1f} "
       f"cp x {cx0:.1f}..{cx1:.1f} y {y_cp0:.1f}..{y_cp0 + cp_bay_d:.1f} trench {ty0:.1f}..{ty1:.1f} "
-      f"usb_c y={cp_usb_y:.1f} grove y={cp_grove_y:.1f} posts={[(round(a, 1), round(b, 1)) for a, b in posts]}")
+      f"usb_c y={cp_usb_y:.1f} plug bay {W - skin - cx1:.1f}")
