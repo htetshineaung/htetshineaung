@@ -19,8 +19,8 @@ battery that powers the Pi.
   the back between the hinges), battery along the front, power boards on the right.
 - **Right wall:** USB-C charging, master switch (step-down enable), power button wired to the
   Pi 5 power-button pads.
-- **Lid:** screen behind a 1.2 mm bezel; the DSI flat cable passes between the hinges.
-- **Hinge:** two printed knuckle pairs on M3×30 axles with nylon washers for friction.
+- **Lid:** Waveshare 5" DSI LCD (121 × 76 mm) behind a 1.2 mm bezel, held by 4 M2.5 screws through the lid back into its corner standoffs (113 × 68 mm). The DSI flat cable passes through a slot between the hinges, above the Pi 5 display connector. Measure the screen thickness (`scr_t`) before printing.
+- **Hinge:** two printed knuckle pairs on M3×30 axles with nylon washers for friction. The axis sits on the rear edge, level with the base top, so the lid opens freely (checked collision-free from 0° to 140°); 45° gussets under the barrels print without supports.
 
 ## Power
 USB-C → 2S charger (IP2326 type) → 2S pack with BMS → master switch → 5 V 5.5 A step-down

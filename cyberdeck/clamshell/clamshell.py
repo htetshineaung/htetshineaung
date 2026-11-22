@@ -27,7 +27,7 @@ Printed parts:
   clam_lid_bezel.stl   screen bezel (front face down)
 Axles: 2x M3x30 screws + nyloc nuts + nylon washers (set the hinge friction).
 
-!! Concept dimensions. Check before printing: the screen module (`scr_*`), Pi cooler height
+!! Concept dimensions. Check before printing: the screen stack thickness (`scr_t`), Pi cooler height
    (`pi_stack_top`), the exact tactile switch and the battery contacts you use.
 """
 import os
@@ -78,20 +78,29 @@ lr_w, lr_h, lr_y0 = 9.0, 7.0, 13.0
 oled_cx, oled_cy, oled_win = 24.0, 56.5, (23.0, 12.0)
 
 # Lid: 5" DSI touchscreen (CHECK: outline, active area, thickness)
-lid_t = 8.6
-scr_w, scr_d, scr_t = 120.7, 75.8, 6.0
+lid_t = None                 # derived below from the screen stack
+# Waveshare 5inch DSI LCD (Rev2.2 drawing): outline 121.0 x 76.0; corner standoffs 113.0 x 68.0
+# (4.0 mm in from each edge, threaded, on the back); DSI connector on the back, ~14 mm from one
+# short edge, mid-height -> mounted on the side nearest the cable slot.
+scr_w, scr_d = 121.0, 76.0
+scr_t = 6.0                  # glass front -> tips of the back standoffs. MEASURE (sets the lid thickness)
+scr_holes = (113.0, 68.0)
+scr_screw_d, scr_head_d = 2.8, 5.2    # M2.5 screws from outside into the standoffs
 scr_win = (110.0, 66.0)
 scr_off_y = -1.0             # screen centre offset toward the front (away from the hinge)
 bezel_t, back_t = 1.2, 1.4
+lid_t = bezel_t + scr_t + back_t
 lid_lip = 1.0                # rim that keeps the glass off the keys when closed
 
 # Hinge: two pairs of knuckles, M3 axles
-hinge_y = D - 5.5
+# Axis ON the rear edge, level with the base top (= lid underside). Nothing on the lid then sweeps
+# into the base, so the lid opens freely; the base knuckle gussets stop it at ~135 deg.
+hinge_y = D
 knuckle_r = 4.6
 axle_d = 3.3
-base_knuckles = [(7.0, 19.0), (121.0, 133.0)]
-lid_knuckles = [(19.6, 34.0), (106.0, 120.4)]
-ffc_slot = (72.0, 96.0)      # DSI flat cable passes here, between the hinges
+base_knuckles = [(10.0, 22.0), (118.0, 130.0)]
+lid_knuckles = [(22.6, 36.0), (104.0, 117.4)]
+ffc_slot = (37.0, 57.0)      # DSI flat cable passes here, right above the Pi 5 display connector
 open_deg = 112.0             # lid angle in the assembled preview
 
 eps = 0.01
@@ -132,6 +141,15 @@ def cyl(x, y, z0, z1, d):
 def xcyl(x0, x1, y, z, r):
     """Cylinder along X (hinge knuckles / axles)."""
     return cq.Workplane("YZ").circle(r).extrude(x1 - x0).translate((x0, y, z))
+
+
+def gusset(x0, x1, up):
+    """45-degree web under a knuckle that sticks out behind the case (prints without supports;
+    on the base it is also the lid stop). up=False: below the axis (base), True: above (lid)."""
+    c = knuckle_r * 0.7071
+    s = 1 if up else -1
+    pts = [(hinge_y, hinge_z), (hinge_y + c, hinge_z + s * c), (hinge_y, hinge_z + s * 2 * c)]
+    return cq.Workplane("YZ").polyline(pts).close().extrude(x1 - x0).translate((x0, 0, 0))
 
 
 def outline(z0, z1, inset=0.0):
@@ -208,7 +226,7 @@ for fx, fy in [(14, 12), (W - 14, 12), (14, D - 12), (W - 14, D - 12)]:
 
 # hinge: base knuckles + clearance for the lid knuckles, DSI cable slot
 for x0, x1 in base_knuckles:
-    base = base.union(xcyl(x0, x1, hinge_y, hinge_z, knuckle_r).intersect(outline(0, BH + 10)))
+    base = base.union(xcyl(x0, x1, hinge_y, hinge_z, knuckle_r)).union(gusset(x0, x1, up=False))
 for x0, x1 in lid_knuckles:
     base = base.cut(xcyl(x0 - 0.4, x1 + 0.4, hinge_y, hinge_z, knuckle_r + 0.5))
 for x0, x1 in base_knuckles + lid_knuckles:
@@ -257,7 +275,7 @@ bezel = bezel.cut(rbox(W / 2 - scr_win[0] / 2, scr_cy - scr_win[1] / 2, lz0 - ep
 bezel = bezel.union(outline(lz0 - lid_lip, lz0 + eps, 0).cut(outline(lz0 - lid_lip - eps, lz0 + 2 * eps, 1.6)))
 # lid knuckles + clearance for the base knuckles, cable slot
 for x0, x1 in lid_knuckles:
-    lid_back = lid_back.union(xcyl(x0, x1, hinge_y, hinge_z, knuckle_r).intersect(outline(BH - 10, lz0 + lid_t)))
+    lid_back = lid_back.union(xcyl(x0, x1, hinge_y, hinge_z, knuckle_r)).union(gusset(x0, x1, up=True))
 for x0, x1 in base_knuckles:
     lid_back = lid_back.cut(xcyl(x0 - 0.4, x1 + 0.4, hinge_y, hinge_z, knuckle_r + 0.5))
     bezel = bezel.cut(xcyl(x0 - 0.4, x1 + 0.4, hinge_y, hinge_z, knuckle_r + 0.5))
@@ -266,6 +284,12 @@ for x0, x1 in lid_knuckles:
 for x0, x1 in base_knuckles + lid_knuckles:
     lid_back = lid_back.cut(xcyl(x0 - 1, x1 + 1, hinge_y, hinge_z, axle_d / 2))
 lid_back = lid_back.cut(box(ffc_slot[0], D - wall - 2.5, BH - 1, ffc_slot[1], D - wall + eps, lz0 + 3))
+# M2.5 screws through the lid back into the screen's corner standoffs (small counterbores outside)
+for sx in (-scr_holes[0] / 2, scr_holes[0] / 2):
+    for sy in (-scr_holes[1] / 2, scr_holes[1] / 2):
+        hx, hy = W / 2 + sx, scr_cy + sy
+        lid_back = lid_back.cut(cyl(hx, hy, lz0 + lid_t - back_t - eps, lz0 + lid_t + eps, scr_screw_d))
+        lid_back = lid_back.cut(cyl(hx, hy, lz0 + lid_t - 0.8, lz0 + lid_t + eps, scr_head_d))
 # finger notch at the front of the lid
 lid_back = lid_back.cut(cq.Workplane("XZ").ellipse(14, 3.2).extrude(-6).translate((W / 2, -1, lz0)))
 
