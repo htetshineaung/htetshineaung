@@ -1,8 +1,10 @@
 """
-Pi 5 + 3.5" GPIO LCD + M5Stack Cardputer "mini-deck" case  -  v3
+Pi 5 + 3.5" GPIO LCD + M5Stack Cardputer "mini-deck" case  -  v4 (slim)
 
-v3 (fitted to measured Cardputer v1.1 photos): one faceplate over the whole top, the
-Cardputer inset 2 mm below it, and the USB link cable fully hidden:
+v4 = v3 made as thin as the parts allow (25.1 mm): 1.6 mm floor, 2.5 mm Pi standoffs,
+1.6 mm faceplate, and the Cardputer resting straight on the floor.
+Fitted to measured Cardputer v1.1 photos: one faceplate over the whole top, the
+Cardputer inset ~1.5 mm below it, and the USB link cable fully hidden:
   Pi lower-front USB-A -> left channel (under the Ethernet jack) -> trench inside the
   divider -> plug bay on the RIGHT of the Cardputer, where its USB-C is (back end, near top).
 Speaker grille in the right wall lines up with the Cardputer speaker under its USB-C.
@@ -27,7 +29,7 @@ Printed parts:
   deck_tray.stl       body. Print upright (floor on bed), no supports.
   deck_faceplate.stl  top plate. Print top face DOWN, no supports.
 
-Hardware: 4x M2.5x6 (Pi -> standoffs), 4x M2.5x8 self-tapping (faceplate -> tray),
+Hardware: 4x M2.5x5 (Pi -> standoffs), 4x M2.5x8 self-tapping (faceplate -> tray),
           1x USB-A (right-angle, "up/down" angled) to USB-C (right-angle, "left/right"), ~20 cm.
 
 !! Measure YOUR parts first: `stack_above_pcb`, `lcd_win_dx/dy`.
@@ -46,7 +48,7 @@ port_overhang = 2.5          # USB/Ethernet jacks stick out past the PCB edge
 eth_y, usb_front_y, usb_back_y = 45.75, 29.1, 10.2   # jack centres along the Pi edge (Pi coords)
 
 # --- Pi + LCD stack ---
-standoff_h = 4.0
+standoff_h = 2.5            # Pi 5 underside is flat apart from the microSD socket (~1.4 mm)
 standoff_od = 6.0
 pilot_d = 2.2
 stack_above_pcb = 17.5       # Pi PCB top -> LCD glass top. MEASURE
@@ -59,17 +61,17 @@ lcd_win_dx, lcd_win_dy = 0.0, 0.0
 # --- Cardputer v1.1 (84 x 54; measured ~22 tall at the StampS3A block, doc says 19.7) ---
 cp_w, cp_d, cp_h = 84.0, 54.0, 22.0
 cp_cl = 0.4
-cp_recess = 2.0              # Cardputer top sits this far below the faceplate top
 cp_usb_from_back = 10.0      # USB-C centre, RIGHT end, measured from the Cardputer's back edge
 cp_usb_z = 19.0              # USB-C centre height above the Cardputer's bottom
 cp_grove_from_back = 9.0     # Grove port centre, LEFT end, from the back edge
 cp_left_gap = 6.7            # room left of the Cardputer (Grove plug, option B)
 plug_bay_w = 11.5            # room right of the Cardputer for the right-angle USB-C head
-plug_relief = 1.2            # pocket in the faceplate underside over the USB-C head
+plug_relief = 1.0            # pocket in the faceplate underside over the USB-C head
+usb_c_half_h = 3.3           # right-angle USB-C overmould, half height
 spk_from_back, spk_z = 10.0, 13.0   # speaker grille under the USB-C
 
 # --- Shell ---
-floor_t = 2.0
+floor_t = 1.6
 outer_left = 2.5             # outer skin of the cable channel
 chan_w = 11.0                # free width between port faces / Cardputer and the skin
 right_wall = 6.0
@@ -78,9 +80,9 @@ back_wall = 6.0
 divider = 8.0                # holds a cable trench
 trench_w = 5.0
 corner_r = 5.0
-bottom_chamfer = 1.0
-lid_t = 2.4
-lid_chamfer = 0.8
+bottom_chamfer = 1.5
+lid_t = 1.6
+lid_chamfer = 0.6
 screw_d, lid_pilot_d, lid_pilot_depth = 2.8, 2.2, 12.0
 scoop_r, scoop_depth, scoop_w = 14.0, 8.0, 28.0
 
@@ -104,7 +106,10 @@ pcb_z = floor_t + standoff_h
 pcb_top = pcb_z + pi_pcb_t
 H = pcb_top + stack_above_pcb + lid_gap            # tray rim; faceplate sits on it
 TOP = H + lid_t
-cp_floor_z = TOP - cp_recess - cp_h
+cp_floor_z = floor_t                               # Cardputer sits on the floor
+cp_recess = TOP - cp_floor_z - cp_h
+assert cp_recess >= 0, "case thinner than the Cardputer"
+assert cp_floor_z + cp_usb_z + usb_c_half_h <= H + plug_relief, "USB-C plug hits the faceplate"
 cx_mid = (bay_x0 + bay_x1) / 2                      # Pi / LCD centre line
 cx0 = outer_left + cp_left_gap                       # Cardputer pocket left edge
 cx1 = cx0 + cp_bay_w
@@ -159,8 +164,8 @@ for hx, hy in pi_holes:
     x, y = pi_to_dev(hx, hy)
     tray = tray.union(cq.Workplane("XY").circle(standoff_od / 2).extrude(standoff_h)
                       .translate((x, y, floor_t - eps)))
-    tray = tray.cut(cq.Workplane("XY").circle(pilot_d / 2).extrude(standoff_h + 1)
-                    .translate((x, y, floor_t + 0.6)))
+    tray = tray.cut(cq.Workplane("XY").circle(pilot_d / 2).extrude(floor_t + standoff_h)
+                    .translate((x, y, 0.6)))
 
 # --- Left skin openings (user-facing ports). Lower-front USB stays hidden (internal cable).
 def left_open(pi_y, half_w, z0, z1):
@@ -225,8 +230,8 @@ face = face.cut(scoop())
 for x, y in screw_pts:
     face = face.cut(cq.Workplane("XY").circle(screw_d / 2).extrude(lid_t + 2 * eps)
                     .translate((x, y, H - eps)))
-    face = face.cut(cq.Workplane("XY").circle(2.6).extrude(1.0 + eps)
-                    .translate((x, y, TOP - 1.0)))          # shallow head recess
+    face = face.cut(cq.Workplane("XY").circle(2.6).extrude(0.6 + eps)
+                    .translate((x, y, TOP - 0.6)))          # shallow head recess
 # grille over the cable channel / port side, mirrored by one on the right margin
 for gx in (outer_left + chan_w / 2 + 1.5, bay_x1 + right_wall / 2 - 1.0):
     for i in range(6):
@@ -252,6 +257,6 @@ if __name__ == "__main__":
                         tolerance=0.01, angularTolerance=0.1)
     cq.exporters.export(tray, os.path.join(out, "deck_tray.step"))
     cq.exporters.export(face_print, os.path.join(out, "deck_faceplate.step"))
-print(f"Case v3: {W:.1f} x {D:.1f} x {TOP:.1f} mm  | Pi PCB x={x_pcb:.1f}, Pi bay y0={y_pi0:.1f}, "
-      f"pocket x {cx0:.1f}..{cx1:.1f}, floor z={cp_floor_z:.1f}, USB-C y={cp_usb_y:.1f} "
+print(f"Case v4: {W:.1f} x {D:.1f} x {TOP:.1f} mm  | Pi PCB x={x_pcb:.1f}, Pi bay y0={y_pi0:.1f}, "
+      f"pocket x {cx0:.1f}..{cx1:.1f}, floor z={cp_floor_z:.1f}, recess={cp_recess:.1f}, pcb_z={pcb_z:.1f}, USB-C y={cp_usb_y:.1f} "
       f"z={cp_floor_z + cp_usb_z:.1f}, Grove y={cp_grove_y:.1f}, trench y {ty0:.1f}..{ty1:.1f}")

@@ -31,9 +31,9 @@ and notifications**.
 | 1 | Low-profile cooler (Active Cooler or heatsink) | must fit under the LCD |
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
 | 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; USB-A end angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
-| 4 | M2.5 × 6 screws (or the brass standoffs that came with the LCD) | Pi → tray |
+| 4 | M2.5 × 5 screws (or the brass standoffs that came with the LCD) | Pi → tray |
 | 4 | M2.5 × 8 self-tapping screws | faceplate → tray |
-| — | PLA/PETG ~140 g | two printed parts |
+| — | PLA/PETG ~110 g | two printed parts |
 
 ## 2. Wiring
 
@@ -153,8 +153,9 @@ Files in `case/stl/`:
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **108 × 133 × 28 mm**. v3 (fitted to measured Cardputer v1.1 photos): one
-faceplate over the whole top, the Cardputer inset 2 mm below it, and the link cable fully
+Overall size **108 × 133 × 25 mm** (v4, as thin as the parts allow: 1.6 mm floor,
+2.5 mm Pi standoffs, 1.6 mm faceplate). Fitted to measured Cardputer v1.1 photos: one
+faceplate over the whole top, the Cardputer resting on the floor ~1.5 mm below it, and the link cable fully
 hidden: lower-front USB-A → left channel (under the Ethernet jack) → trench inside the
 divider → USB-C on the Cardputer's **right** end. Ethernet and the other three USB ports
 stay reachable; a grille in the right wall lines up with the Cardputer's speaker.
@@ -168,7 +169,7 @@ Edit the parameters at the top of `case/deck_case.py` and re-run `python deck_ca
 
 | Parameter | Default | What to measure |
 |---|---|---|
-| `stack_above_pcb` | 17.5 mm | Pi PCB top surface → top of the LCD glass (with your cooler) |
+| `stack_above_pcb` | 17.5 mm | Pi PCB top surface → top of the LCD glass (with your cooler). Every mm less here makes the case 1 mm thinner, down to the Cardputer's 22 mm + floor + faceplate (25.2) |
 | `lcd_win_dx`, `lcd_win_dy` | 0, 0 | glass centre offset from the board centre (most 3.5" glass sits off-centre toward the FPC end) |
 | `cp_h` | 22 mm | tallest point of the Cardputer (the StampS3A block). Set from photos |
 | `cp_usb_from_back`, `cp_usb_z` | 10, 19 mm | USB-C on the right end: distance from the back edge, height above the bottom. Set from photos; check once |
