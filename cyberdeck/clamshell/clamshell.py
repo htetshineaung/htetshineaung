@@ -237,6 +237,11 @@ for i in range(9):                                   # speaker / vent strip over
 plate = plate.cut(box(ffc_slot[0], D - wall - 4.0, plate_z - eps, ffc_slot[1], D, BH + eps))
 for x0, x1 in lid_knuckles + base_knuckles:
     plate = plate.cut(xcyl(x0 - 0.5, x1 + 0.5, hinge_y, hinge_z, knuckle_r + 0.6))
+# bosses that hold the keyboard PCB (M2x4 self-tapping screws from below; positions = circuit.HOLES)
+kb_holes = [(7.0, 8.0), (108.5, 8.0), (22.0, 73.5), (108.5, 71.0), (64.0, 73.5)]
+for hx, hy in kb_holes:
+    plate = plate.union(cyl(hx, hy, kb_pcb_z + kb_pcb_t, plate_z + eps, 4.5))
+    plate = plate.cut(cyl(hx, hy, kb_pcb_z + kb_pcb_t - eps, plate_z + 0.8, 1.7))
 
 # ============================================================
 # LID (modelled closed: screen face at z = BH + lid_lip, back at BH + lid_lip + lid_t)

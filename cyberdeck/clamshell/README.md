@@ -43,3 +43,9 @@ option for phase 2.
 ## Next
 Phase 2: keyboard PCB in KiCad (RP2040, key matrix, OLED, trackball header, battery sense),
 ready for JLCPCB. Phase 3: firmware and Linux integration.
+
+## Phase 2 status
+Keyboard PCB: see [`../keyboard-pcb`](../keyboard-pcb). Schematic and placement are done and
+checked; routing is next. Change from phase 1: the keyboard talks to the Pi over the Pi 5's
+internal UART connector (the Pi's USB ports face out through the case wall), and takes 5 V from
+the step-down. The deck now has five M2 bosses that hold the keyboard PCB.
