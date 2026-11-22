@@ -30,10 +30,10 @@ and notifications**.
 | 1 | 3.5" 480×320 SPI GPIO LCD (the one in your photo) | plugs onto the 40-pin header |
 | 1 | Low-profile cooler (Active Cooler or heatsink) | must fit under the LCD |
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
-| 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; USB-A end angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
+| 1 | **USB-A → USB-C data cable, right-angle at both ends** (~20 cm; slim USB-A head ≤ 7 mm angled up/down, USB-C end angled left/right) | the only wire; fully hidden inside the case |
 | 4 | M2.5 × 5 screws (or the brass standoffs that came with the LCD) | Pi → tray |
-| 4 | M2.5 × 8 self-tapping screws | faceplate → tray |
-| — | PLA/PETG ~110 g | two printed parts |
+| 4 | M2 × 6 self-tapping screws | faceplate → corner posts |
+| — | PLA/PETG ~80 g | two printed parts |
 
 ## 2. Wiring
 
@@ -153,8 +153,9 @@ Files in `case/stl/`:
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **108 × 133 × 25 mm** (v4, as thin as the parts allow: 1.6 mm floor,
-2.5 mm Pi standoffs, 1.6 mm faceplate). Fitted to measured Cardputer v1.1 photos: one
+Overall size **104 × 125 × 25 mm** (v5, as slim as the parts allow: 1.8 mm walls all
+round, 1.6 mm floor and faceplate, 2.5 mm Pi standoffs, faceplate screwed into four small
+corner posts). Fitted to measured Cardputer v1.1 photos: one
 faceplate over the whole top, the Cardputer resting on the floor ~1.5 mm below it, and the link cable fully
 hidden: lower-front USB-A → left channel (under the Ethernet jack) → trench inside the
 divider → USB-C on the Cardputer's **right** end. Ethernet and the other three USB ports
@@ -174,7 +175,7 @@ Edit the parameters at the top of `case/deck_case.py` and re-run `python deck_ca
 | `cp_h` | 22 mm | tallest point of the Cardputer (the StampS3A block). Set from photos |
 | `cp_usb_from_back`, `cp_usb_z` | 10, 19 mm | USB-C on the right end: distance from the back edge, height above the bottom. Set from photos; check once |
 
-Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay_w`, `cp_left_gap`, `chan_w`, `trench_w`, `pi_cl`, `standoff_h`.
+Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay_min`, `cp_left_gap`, `chan_w`, `skin`, `trench_w`, `pi_cl`, `standoff_h`.
 
 ### Assembly
 
@@ -185,8 +186,8 @@ Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `plug_bay
    left channel (under the Ethernet jack), then along the trench inside the divider.
 5. Plug the USB-C end into the **right end** of the Cardputer (cable pointing back into the
    trench) and lower the Cardputer into its pocket.
-6. Screw the faceplate on (4 × M2.5 self-tappers). The Cardputer is captive; remove the
+6. Screw the faceplate on (4 × M2 × 6 self-tappers into the corner posts). The Cardputer is captive; remove the
    faceplate to take it out.
    Option B: run the 3 wires from the UART socket down the left channel and along the trench
-   to the Grove port on the Cardputer's **left** end (about 7 mm of room: bend the wires back
-   right at the plug).
+   to the Grove port on the Cardputer's **left** end (only ~5 mm of room: use a slim or
+   right-angle Grove plug).
