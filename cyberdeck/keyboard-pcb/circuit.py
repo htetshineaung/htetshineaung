@@ -4,8 +4,11 @@ Clamshell keyboard PCB - circuit definition (single source of truth).
 Everything here feeds both generated files: the KiCad schematic (gen_sch.py) and the KiCad
 PCB (gen_pcb.py), so they cannot disagree.
 
-Board: 2-layer, 1.0 mm FR4, sits under the clamshell deck (see ../clamshell/clamshell.py).
-  Top:    46 tactile switches (XKB TS-1187A 5.1x5.1x1.5 mm), OLED pin pads, BOOT/RESET, LED.
+Board: 4-layer (GND and 3V3 inner planes), 1.0 mm FR4, sits under the clamshell deck (see ../clamshell/clamshell.py).
+  Top:    46 tactile switches (XKB TS-1187A 5.1x5.1x1.5 mm), OLED pin pads, BOOT/RESET, LED,
+          and the built-in trackball: a 4-roller hall-effect mechanism (BlackBerry-style, as in
+          the Pimoroni trackball) sits on the board, 4 DRV5033 omnipolar hall switches read its roller magnets,
+          a KMR2 switch under the ball is the click.
   Bottom: RP2040 + flash + crystal + 3.3 V LDO, key diodes, connectors.
 
 Coordinates are CASE coordinates in mm (x right, y from the front edge toward the hinge),
@@ -23,8 +26,11 @@ TB_CX, TB_CY = 124.0, 40.0
 LR_W, LR_H, LR_Y0 = 9.0, 7.0, 13.0
 OLED_CX, OLED_CY = 24.0, 56.5
 
-BOARD = dict(x0=3.5, y0=4.0, x1=136.5, y1=76.0, r=4.0,
-             notch=(112.0, 27.0, 137.5, 53.0))          # trackball module drops through here
+BOARD = dict(x0=3.5, y0=4.0, x1=136.5, y1=76.0, r=4.0, notch=None)   # one solid board
+# Trackball mechanism (measure yours before ordering): body outline and where each roller's
+# magnet passes over the board, relative to the ball centre (TB_CX, TB_CY).
+TB_BODY = (12.0, 12.0)                                   # footprint of the mechanism, mm
+TB_HALL = {"TB_UP": (0.0, 5.0), "TB_DOWN": (0.0, -5.0), "TB_LEFT": (-5.0, 0.0), "TB_RIGHT": (5.0, 0.0)}
 HOLES = [(7.0, 8.0), (108.5, 8.0), (22.0, 73.5), (108.5, 71.0), (64.0, 73.5)]   # M2, to deck bosses
 NO_BOTTOM_ZONE = (0.0, 27.0, 20.5, 80.0)               # above the Pi's USB jacks: no bottom parts
 
@@ -70,7 +76,8 @@ rp = {"1": "+3V3", "10": "+3V3", "22": "+3V3", "33": "+3V3", "42": "+3V3", "49":
       "8": "COL0", "9": "COL1", "11": "COL2", "12": "COL3", "13": "COL4", "14": "COL5",  # GPIO6..11
       "15": "COL6", "16": "COL7", "17": "COL8", "18": "COL9", "27": "COL10", "28": "COL11",  # GPIO12..17
       "29": "I2C_SDA", "30": "I2C_SCL",                 # GPIO18/19 = I2C1
-      "31": "TB_INT",                                   # GPIO20
+      "32": "TB_UP", "34": "TB_DOWN", "35": "TB_LEFT", "36": "TB_RIGHT",   # GPIO21..24: hall switches
+      "39": "TB_CLICK",                                 # GPIO27: ball click
       "37": "LED",                                      # GPIO25
       "38": "VBAT_SENSE",                               # GPIO26 / ADC0
       }
@@ -111,15 +118,30 @@ part("C2", "Device:C_Small", C0402, "1uF", {"1": "+3V3", "2": "GND"}, (49.5, 66.
 part("C3", "Device:C_Small", C0603, "10uF", {"1": "+3V3", "2": "GND"}, (52.0, 63.0), rot=90, mpn="CL10A106KP8NNNC", lcsc="C19702")
 part("D1", "Device:D_Schottky_Small", "Diode_SMD:D_SOD-123", "B5819W", {"1": "+5V", "2": "VBUS_USB"}, (38.0, 66.0), rot=90, mpn="B5819W", lcsc="C8598")
 
-# --- connectors (all on the bottom, cables run to the Pi / power board / trackball)
+# --- built-in trackball: 4 hall switches under the roller magnets, click switch under the ball.
+# DRV5033 outputs are open drain: 10k pull-ups to 3V3 (the RP2040's own pull-ups work too).
+for i, (net, (dx, dy)) in enumerate(TB_HALL.items()):
+    hx, hy = TB_CX + dx, TB_CY + dy
+    part(f"U{4 + i}", "Sensor_Magnetic:DRV5033FAxDBZ", "Package_TO_SOT_SMD:SOT-23", "DRV5033FA",
+         {"1": "+3V3", "2": net, "3": "GND"}, (hx, hy), side="top", rot=(90 if dx == 0 else 0),
+         mpn="DRV5033FAQDBZR")
+    ox, oy = (6.5 if dx >= 0 else -6.5, 0.0) if dy == 0 else (0.0, 6.0 if dy > 0 else -6.0)
+    part(f"C{20 + i}", "Device:C_Small", C0402, "100nF", {"1": "+3V3", "2": "GND"},
+         (hx + ox + (1.2 if dy != 0 else 0), hy + oy + (0 if dy != 0 else 1.2)), side="top", rot=90,
+         mpn="CL05B104KO5NNNC", lcsc="C1525")
+    part(f"R{20 + i}", "Device:R_Small", R0402, "10k", {"1": "+3V3", "2": net},
+         (hx + ox - (1.2 if dy != 0 else 0), hy + oy - (0 if dy != 0 else 1.2)), side="top", rot=90,
+         mpn="0402WGF1002TCE", lcsc="C25744")
+part("SW102", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", "TB_CLICK",
+     {"1": "TB_CLICK", "2": "GND"}, (TB_CX, TB_CY), side="top", mpn="KMR221GLFS")
+
+# --- connectors (all on the bottom, cables run to the Pi / power board)
 part("J1", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "PI_LINK",
      {"1": "+5V", "2": "GND", "3": "KB_RX", "4": "KB_TX"}, (57.0, 72.5), rot=180, mpn="SM04B-SRSS-TB")
 part("J5", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "USB_PROG",
      {"1": "VBUS_USB", "2": "USB_DN", "3": "USB_DP", "4": "GND"}, (46.0, 72.5), rot=180, mpn="SM04B-SRSS-TB")
 part("R2", "Device:R_Small", R0402, "27R", {"1": "USB_DM_MCU", "2": "USB_DN"}, (MX - 6.5, MY + 8.5), rot=90, mpn="0402WGF270KTCE", lcsc="C25100")
 part("R3", "Device:R_Small", R0402, "27R", {"1": "USB_DP_MCU", "2": "USB_DP"}, (MX - 5.0, MY + 8.5), rot=90, mpn="0402WGF270KTCE", lcsc="C25100")
-part("J3", "Connector_Generic:Conn_01x05", "Connector_JST:JST_SH_SM05B-SRSS-TB_1x05-1MP_P1.00mm_Horizontal", "TRACKBALL",
-     {"1": "+3V3", "2": "I2C_SDA", "3": "I2C_SCL", "4": "TB_INT", "5": "GND"}, (106.0, 47.0), rot=90, mpn="SM05B-SRSS-TB")
 part("J4", "Connector_Generic:Conn_01x02", "Connector_JST:JST_SH_SM02B-SRSS-TB_1x02-1MP_P1.00mm_Horizontal", "VBAT",
      {"1": "VBAT", "2": "GND"}, (108.5, 24.0), mpn="SM02B-SRSS-TB")
 part("J2", "Connector_Generic:Conn_01x04", "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical", "OLED",

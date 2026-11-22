@@ -67,7 +67,7 @@ def pads(ref, number):
     return [p for p in fps[ref].Pads() if p.GetNumber() == number]
 
 
-key_sw = [r for r, p in meta.items() if p["symbol"] == "Switch:SW_Push" and r not in ("SW100", "SW101")]
+key_sw = [r for r, p in meta.items() if p["symbol"] == "Switch:SW_Push" and r not in ("SW100", "SW101", "SW102")]
 diodes = [r for r, p in meta.items() if r.startswith("D") and r[1:].isdigit() and int(r[1:]) > 100]
 anode_to_sw = defaultdict(list)
 for r in key_sw:

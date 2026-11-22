@@ -38,7 +38,7 @@ for p in PARTS:
     r = p["ref"]
     if r in place:
         continue
-    if (r.startswith("SW") and r not in ("SW100", "SW101")) or (r.startswith("D") and r[1:].isdigit() and int(r[1:]) > 100):
+    if (r.startswith("SW") and r not in ("SW100", "SW101", "SW102")) or (r.startswith("D") and r[1:].isdigit() and int(r[1:]) > 100):
         continue
     place[r] = (40.0 + (col_misc % 9) * 30.48, 230.0 + (col_misc // 9) * 30.48)
     col_misc += 1
@@ -53,7 +53,7 @@ for p in PARTS:
         matrix_cells.setdefault(anode, {"diode": r, "row": row, "switches": []})
 for p in PARTS:
     r = p["ref"]
-    if r.startswith("SW") and r not in ("SW100", "SW101"):
+    if r.startswith("SW") and r not in ("SW100", "SW101", "SW102"):
         matrix_cells[p["pins"]["2"]]["switches"].append((r, int(p["pins"]["1"][3:])))
 for anode, cell in matrix_cells.items():
     col = cell["switches"][0][1]

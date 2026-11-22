@@ -2,7 +2,7 @@
 
     python gnd_islands.py <board.kicad_pcb> [--prune <out.kicad_pcb>]
 
-Each filled outline of the GND zones (top and bottom) is a node; vias, through-hole pads and
+Each filled outline of the GND zones (every copper layer) is a node; vias, through-hole pads and
 GND tracks join nodes.  Everything not in the largest group is reported with the GND pads it
 holds.  --prune deletes stitching vias (vias with no track on them) that only join stray
 islands, so the next zone fill drops those islands.
@@ -17,13 +17,14 @@ prune = sys.argv[sys.argv.index("--prune") + 1] if "--prune" in sys.argv else No
 board = pcbnew.LoadBoard(path)
 T = pcbnew.ToMM
 gnd = board.GetNetInfo().GetNetItem("GND").GetNetCode()
+COPPER = [ly for ly in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.IsLayerEnabled(ly)]
 
 # nodes: (layer, outline index) of each filled GND polygon
 islands = []                                         # (layer, SHAPE_POLY_SET, idx, area)
 for z in board.Zones():
     if z.GetNetCode() != gnd:
         continue
-    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+    for layer in COPPER:
         if not z.IsOnLayer(layer):
             continue
         ps = z.GetFilledPolysList(layer)
@@ -63,7 +64,7 @@ for t in board.GetTracks():
 groups = []                                          # (kind, item, island ids)
 for v in vias:
     p = v.GetPosition()
-    groups.append(("via", v, hits(p, pcbnew.F_Cu) + hits(p, pcbnew.B_Cu)))
+    groups.append(("via", v, sum((hits(p, ly) for ly in COPPER), [])))
 pad_islands = {}
 for fp in board.GetFootprints():
     for pd in fp.Pads():
@@ -71,7 +72,7 @@ for fp in board.GetFootprints():
             continue
         p = pd.GetPosition()
         ids = []
-        for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        for layer in COPPER:
             if pd.IsOnLayer(layer):
                 ids += hits(p, layer)
         pad_islands[f"{fp.GetReference()}.{pd.GetNumber()}"] = (pd, ids)

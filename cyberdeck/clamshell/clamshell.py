@@ -68,10 +68,10 @@ kb_x0, kb_y0 = 12.0, 12.0    # grid front-left corner
 kb_cols, kb_rows = 11, 4
 space_cols = (4, 6)          # bottom row: columns 4..6 merged into the space bar
 
-# Trackball (Pimoroni breakout 25 x 22 x 9.5) and L/R buttons, right of the keys
+# Trackball, built into the keyboard PCB: a 4-roller hall-effect mechanism (BlackBerry-style,
+# ~12 x 12 mm) soldered on the PCB; the ball comes up through the deck plate.  Measure yours.
 tb_cx, tb_cy = 124.0, 40.0
-tb_board_w, tb_board_d, tb_h = 22.0, 25.0, 9.5
-tb_hole_d = 13.0
+tb_body = 12.0                # mechanism footprint on the PCB (square)
 lr_w, lr_h, lr_y0 = 9.0, 7.0, 13.0
 
 # OLED 0.96" 128x64 (module 27 x 27, glass window 23 x 12) top-left above the keys
@@ -195,11 +195,7 @@ for i in range(2):
         sad = box(sx - 2, cell_y0, floor_t - eps, sx + 2, cell_y0 + cell_d, floor_t + 6)
         base = base.union(sad.cut(xcyl(sx - 3, sx + 3, cell_y0 + cell_d / 2, floor_t + cell_d / 2, cell_d / 2 + 0.2)))
 
-# trackball posts (board sits under the deck, ball through the plate)
-tb_seat = cap_top + 0.4 - tb_h
-for dx in (-tb_board_w / 2 + 1.5, tb_board_w / 2 - 1.5):
-    for dy in (-tb_board_d / 2 + 1.5, tb_board_d / 2 - 1.5):
-        base = base.union(box(tb_cx + dx - 1.5, tb_cy + dy - 1.5, floor_t - eps, tb_cx + dx + 1.5, tb_cy + dy + 1.5, tb_seat))
+# (trackball: no posts needed any more, the mechanism is soldered on the keyboard PCB)
 
 # --- ports
 def left_open(pi_y, half_w, z0, z1):
@@ -245,7 +241,8 @@ for x0, y0, x1, y1 in key_cells():
 web = rbox(kb_x0 - 2, kb_y0 - 2, sw_top, kb_x0 + kb_cols * key_px + 1, kb_y0 + kb_rows * key_py + 1, sw_top + mat_web, 2)
 lr_web = rbox(tb_cx - lr_w - 2.6, lr_y0 - 2, sw_top, tb_cx + lr_w + 2.6, lr_y0 + lr_h + 2, sw_top + mat_web, 2)
 mat = mat.union(web).union(lr_web)
-plate = plate.cut(cyl(tb_cx, tb_cy, plate_z - eps, BH + eps, tb_hole_d))
+h = tb_body / 2 + 0.3       # the mechanism (about 5 mm tall) rises through a square opening in the plate
+plate = plate.cut(box(tb_cx - h, tb_cy - h, plate_z - eps, tb_cx + h, tb_cy + h, BH + eps))
 plate = plate.cut(rbox(oled_cx - oled_win[0] / 2, oled_cy - oled_win[1] / 2, plate_z - eps,
                        oled_cx + oled_win[0] / 2, oled_cy + oled_win[1] / 2, BH + eps, 1.0))
 for i in range(9):                                   # speaker / vent strip over the Pi
@@ -321,4 +318,4 @@ if __name__ == "__main__":
     cq.exporters.export(base.union(plate).union(mat).union(lid_back).union(bezel),
                         os.path.join(out, "clam_assembled_closed.stl"), **kw)
 print(f"Clamshell: {W} x {D} mm, base {BH:.1f} mm, closed {lz0 + lid_t:.1f} mm | kb pcb z={kb_pcb_z:.1f} "
-      f"plate z={plate_z:.1f} cap top={cap_top:.1f} tb seat={tb_seat:.1f} pi_oy={pi_oy:.1f}")
+      f"plate z={plate_z:.1f} cap top={cap_top:.1f} pi_oy={pi_oy:.1f}")

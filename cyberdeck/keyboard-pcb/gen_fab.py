@@ -22,7 +22,7 @@ for fp in board.GetFootprints():
                  "Bottom" if fp.IsFlipped() else "Top", f"{fp.GetOrientationDegrees() % 360:.0f}"])
     if hand:
         continue
-    comment = "Key switch 5.1x5.1x1.5" if ref.startswith("SW") and ref not in ("SW100", "SW101") else p["value"]
+    comment = "Key switch 5.1x5.1x1.5" if ref.startswith("SW") and ref not in ("SW100", "SW101", "SW102") else p["value"]
     key = (comment, p["footprint"].split(":")[1], p["lcsc"], p["mpn"])
     groups.setdefault(key, []).append(ref)
 with open("fab/bom.csv", "w", newline="") as f:
