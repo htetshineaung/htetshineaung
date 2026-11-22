@@ -1,0 +1,2 @@
+# Stable /dev/cardputer symlink for the Cardputer Deck firmware's USB CDC port
+SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{product}=="Cardputer Deck", SYMLINK+="cardputer", MODE="0660", GROUP="dialout"

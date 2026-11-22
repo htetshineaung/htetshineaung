@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""Send a notification to the Cardputer screen.
+
+    cardputer-notify "Backup" "Finished in 3m12s"
+    cardputer-notify -a cron "Disk" "Root is 91% full"
+"""
+import argparse
+import json
+import socket
+
+ap = argparse.ArgumentParser()
+ap.add_argument("summary")
+ap.add_argument("body", nargs="?", default="")
+ap.add_argument("-a", "--app", default="shell")
+a = ap.parse_args()
+msg = json.dumps({"app": a.app, "summary": a.summary, "body": a.body}).encode()
+socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(msg, ("127.0.0.1", 47800))

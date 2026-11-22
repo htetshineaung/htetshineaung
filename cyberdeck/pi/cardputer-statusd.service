@@ -1,0 +1,12 @@
+[Unit]
+Description=Cardputer deck status/notification screen
+After=network-online.target
+
+[Service]
+# For the wired-UART option append: --uart   (needs root or a uinput udev rule)
+ExecStart=/usr/bin/python3 /usr/local/lib/cardputer/cardputer_statusd.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
