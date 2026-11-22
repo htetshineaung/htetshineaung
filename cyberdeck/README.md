@@ -19,7 +19,7 @@ and notifications**.
    │  │  q w e r t y u i o p  (keyboard)      │  │
    │  └───────────────( finger )──────────────┘  │
    └─────────────────────────────────────────────┘
-   left: USB-A x4 + Ethernet                     front
+   left: hidden cable channel; Ethernet + 3 USB-A   front
 ```
 
 ## 1. Parts
@@ -30,10 +30,10 @@ and notifications**.
 | 1 | 3.5" 480×320 SPI GPIO LCD (the one in your photo) | plugs onto the 40-pin header |
 | 1 | Low-profile cooler (Active Cooler or heatsink) | must fit under the LCD |
 | 1 | M5Stack Cardputer (v1 / v1.1) | keyboard + status screen |
-| 1 | **Short USB-A → USB-C data cable** (10–15 cm, right-angle ideal) | the only wire needed |
+| 1 | **USB-A → USB-C data cable, right-angle at both ends** (~15 cm; USB-A end angled up/down) | the only wire; lives in the hidden left channel |
 | 4 | M2.5 × 6 screws (or the brass standoffs that came with the LCD) | Pi → tray |
-| 4 | M2.5 × 8 self-tapping screws | lid → tray |
-| — | PLA/PETG ~125 g | two printed parts |
+| 4 | M2.5 × 8 self-tapping screws | faceplate → tray |
+| — | PLA/PETG ~160 g | two printed parts |
 
 ## 2. Wiring
 
@@ -147,13 +147,16 @@ Files in `case/stl/`:
 | File | Print orientation | Supports |
 |---|---|---|
 | `deck_tray.stl` | floor on the bed | none |
-| `deck_lid.stl` | already flipped: top face on the bed | none |
+| `deck_faceplate.stl` | already flipped: top face on the bed | none |
 | `*.step` | for editing in Fusion/FreeCAD | — |
 
 **Print settings:** PLA or PETG, 0.2 mm layer, 3 walls, 15–20 % gyroid infill, no supports.
 PETG preferred — the Pi 5 runs warm under the screen.
 
-Overall size **99 × 128 × 28 mm**.
+Overall size **108 × 131 × 28 mm**. v2: one faceplate over the whole top, the Cardputer
+sits flush with it, and the link cable is hidden in a channel along the left side
+(the lower-front USB-A port is used internally; Ethernet and the other three USB ports
+stay reachable through recessed openings).
 
 ![tray](case/preview/deck_tray.png)
 
@@ -166,15 +169,17 @@ Edit the parameters at the top of `case/deck_case.py` and re-run `python deck_ca
 |---|---|---|
 | `stack_above_pcb` | 17.5 mm | Pi PCB top surface → top of the LCD glass (with your cooler) |
 | `lcd_win_dx`, `lcd_win_dy` | 0, 0 | glass centre offset from the board centre (most 3.5" glass sits off-centre toward the FPC end) |
-| `cp_side_slot_y`, `cp_side_slot_len` | 0.62, 34 mm | where your Cardputer's USB-C / power switch are on its sides |
+| `cp_usb_y_frac` | 0.62 | where the USB-C sits along the Cardputer's **left** side (fraction from its front); the cable enters there from the hidden channel |
 
-Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `pi_cl`, `standoff_h`, `grove_dx`.
+Other useful knobs: `cp_cl` (Cardputer fit, 0.4 mm/side), `cp_recess`, `chan_w` (cable channel width), `pi_cl`, `standoff_h`.
 
 ### Assembly
 
 1. Flash the Cardputer and install the Pi software first (easier outside the case).
-2. Fit the cooler, screw the Pi into the tray standoffs (USB/Ethernet toward the **left** open slot).
+2. Fit the cooler, screw the Pi into the tray standoffs (USB/Ethernet toward the **left** side).
 3. Plug the LCD onto the GPIO header, add its standoffs.
-4. Screw the lid on (4 × M2.5 self-tappers into the corner pillars).
-5. Drop the Cardputer into the front pocket, run the USB cable from a left USB-A port to it
-   (or route the Grove cable through the tunnel in the divider for Option B).
+4. Plug the right-angle cable into the **lower-front** USB-A port, lay it in the left channel
+   (it passes under the Ethernet jack) and bring the USB-C end out at the Cardputer pocket.
+5. Plug in the Cardputer, drop it into its pocket (top flush with the faceplate).
+6. Screw the faceplate on (4 × M2.5 self-tappers into the corner pillars).
+   For Option B, route the Grove cable through the tunnel in the divider instead.
