@@ -1,0 +1,4 @@
+tests/test_host
+tests/frames
+tests/*.pgm
+build/
