@@ -85,9 +85,9 @@ part("U1", "MCU_RaspberryPi:RP2040", "Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP
      (MX, MY), mpn="RP2040", lcsc="C2040")
 part("U3", "Memory_Flash:W25Q32JVSS", "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm", "W25Q16JVSSIQ",
      {"1": "QSPI_SS", "2": "QSPI_SD1", "3": "QSPI_SD2", "4": "GND", "5": "QSPI_SD0", "6": "QSPI_SCLK", "7": "QSPI_SD3", "8": "+3V3"},
-     (MX + 10.0, MY + 0.5), rot=90, mpn="W25Q16JVSSIQ")
+     (MX + 10.0, MY + 0.5), rot=90, mpn="W25Q16JVSSIQ", lcsc="C131025")
 part("Y1", "Device:Crystal_GND24", "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm", "12MHz",
-     {"1": "XIN", "2": "GND", "3": "XOUT_R", "4": "GND"}, (MX - 6.5, MY - 7.0), mpn="ABM8-272-T3")
+     {"1": "XIN", "2": "GND", "3": "XOUT_R", "4": "GND"}, (MX - 6.5, MY - 7.0), mpn="ABM8-272-T3", lcsc="C20625731")
 part("R1", "Device:R_Small", R0402, "1k", {"1": "XOUT", "2": "XOUT_R"}, (MX - 2.5, MY - 6.5), rot=90, mpn="0402WGF1001TCE", lcsc="C11702")
 part("C16", "Device:C_Small", C0402, "15pF", {"1": "XIN", "2": "GND"}, (MX - 9.5, MY - 8.5), mpn="0402CG150J500NT", lcsc="C1548")
 part("C17", "Device:C_Small", C0402, "15pF", {"1": "XOUT_R", "2": "GND"}, (MX - 4.0, MY - 9.5), mpn="0402CG150J500NT", lcsc="C1548")
@@ -105,10 +105,10 @@ part("C18", "Device:C_Small", C0402, "100nF", {"1": "+3V3", "2": "GND"}, (MX + 1
 # --- BOOTSEL / RESET (top side, reachable with the deck lifted off)
 part("R5", "Device:R_Small", R0402, "1k", {"1": "QSPI_SS", "2": "BOOT_N"}, (MX + 8.0, MY - 7.5), mpn="0402WGF1001TCE", lcsc="C11702")
 part("SW100", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", "BOOT",
-     {"1": "BOOT_N", "2": "GND"}, (98.0, 66.0), side="top", mpn="KMR221GLFS")
+     {"1": "BOOT_N", "2": "GND"}, (98.0, 66.0), side="top", mpn="KMR221GLFS", lcsc="C72443")
 part("R6", "Device:R_Small", R0402, "10k", {"1": "+3V3", "2": "RUN"}, (MX - 8.5, MY - 1.0), rot=90, mpn="0402WGF1002TCE", lcsc="C25744")
 part("SW101", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", "RESET",
-     {"1": "RUN", "2": "GND"}, (98.0, 72.0), side="top", mpn="KMR221GLFS")
+     {"1": "RUN", "2": "GND"}, (98.0, 72.0), side="top", mpn="KMR221GLFS", lcsc="C72443")
 
 # --- power: 5 V in (Pi link or programming USB) -> 3.3 V LDO
 part("U2", "Regulator_Linear:AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5", "AP2112K-3.3",
@@ -124,7 +124,7 @@ for i, (net, (dx, dy)) in enumerate(TB_HALL.items()):
     hx, hy = TB_CX + dx, TB_CY + dy
     part(f"U{4 + i}", "Sensor_Magnetic:DRV5033FAxDBZ", "Package_TO_SOT_SMD:SOT-23", "DRV5033FA",
          {"1": "+3V3", "2": net, "3": "GND"}, (hx, hy), side="top", rot=(90 if dx == 0 else 0),
-         mpn="DRV5033FAQDBZR")
+         mpn="DRV5033FAQDBZR", lcsc="C2869057")
     ox, oy = (6.5 if dx >= 0 else -6.5, 0.0) if dy == 0 else (0.0, 6.0 if dy > 0 else -6.0)
     part(f"C{20 + i}", "Device:C_Small", C0402, "100nF", {"1": "+3V3", "2": "GND"},
          (hx + ox + (1.2 if dy != 0 else 0), hy + oy + (0 if dy != 0 else 1.2)), side="top", rot=90,
@@ -133,17 +133,17 @@ for i, (net, (dx, dy)) in enumerate(TB_HALL.items()):
          (hx + ox - (1.2 if dy != 0 else 0), hy + oy - (0 if dy != 0 else 1.2)), side="top", rot=90,
          mpn="0402WGF1002TCE", lcsc="C25744")
 part("SW102", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", "TB_CLICK",
-     {"1": "TB_CLICK", "2": "GND"}, (TB_CX, TB_CY), side="top", mpn="KMR221GLFS")
+     {"1": "TB_CLICK", "2": "GND"}, (TB_CX, TB_CY), side="top", mpn="KMR221GLFS", lcsc="C72443")
 
 # --- connectors (all on the bottom, cables run to the Pi / power board)
 part("J1", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "PI_LINK",
-     {"1": "+5V", "2": "GND", "3": "KB_RX", "4": "KB_TX"}, (57.0, 72.5), rot=180, mpn="SM04B-SRSS-TB")
+     {"1": "+5V", "2": "GND", "3": "KB_RX", "4": "KB_TX"}, (57.0, 72.5), rot=180, mpn="SM04B-SRSS-TB", lcsc="C160404")
 part("J5", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "USB_PROG",
-     {"1": "VBUS_USB", "2": "USB_DN", "3": "USB_DP", "4": "GND"}, (46.0, 72.5), rot=180, mpn="SM04B-SRSS-TB")
+     {"1": "VBUS_USB", "2": "USB_DN", "3": "USB_DP", "4": "GND"}, (46.0, 72.5), rot=180, mpn="SM04B-SRSS-TB", lcsc="C160404")
 part("R2", "Device:R_Small", R0402, "27R", {"1": "USB_DM_MCU", "2": "USB_DN"}, (MX - 6.5, MY + 8.5), rot=90, mpn="0402WGF270KTCE", lcsc="C25100")
 part("R3", "Device:R_Small", R0402, "27R", {"1": "USB_DP_MCU", "2": "USB_DP"}, (MX - 5.0, MY + 8.5), rot=90, mpn="0402WGF270KTCE", lcsc="C25100")
 part("J4", "Connector_Generic:Conn_01x02", "Connector_JST:JST_SH_SM02B-SRSS-TB_1x02-1MP_P1.00mm_Horizontal", "VBAT",
-     {"1": "VBAT", "2": "GND"}, (108.5, 24.0), mpn="SM02B-SRSS-TB")
+     {"1": "VBAT", "2": "GND"}, (108.5, 24.0), mpn="SM02B-SRSS-TB", lcsc="C160402")
 part("J2", "Connector_Generic:Conn_01x04", "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical", "OLED",
      {"1": "GND", "2": "+3V3", "3": "I2C_SCL", "4": "I2C_SDA"}, (OLED_CX - 3.81, 68.3), side="top", rot=90,
      mpn="SSD1306 0.96in 128x64 I2C module (GND VCC SCL SDA)")
