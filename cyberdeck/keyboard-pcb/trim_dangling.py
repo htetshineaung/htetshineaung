@@ -5,7 +5,8 @@
 Without NET names every net is trimmed.  First splits any segment that another same-net segment
 or via joins in its middle (a T-junction), so a stub can be cut back exactly to the junction; then
 repeatedly deletes segments with an end that touches nothing of their own net (pad, via, other
-segment; for GND also its filled pour; touching means the copper overlaps, as KiCad counts it) and non-GND vias that join fewer than two segments and no pad.
+segment; for GND also its filled pour; touching means the copper overlaps, as KiCad counts it) and non-GND vias that join fewer than two segments and no pad (a via that only joins tracks on
+one layer is replaced by joining them at its centre).
 GND vias are kept: they stitch the planes.  Works with KiCad 7 to 10.
 """
 import math
@@ -180,15 +181,25 @@ def trim(board, names=None):
                 return plane and zone_hit(zones.get(nc, []), p, layer, mine)
 
             dead = {u for u, ly, a, b, hw in segs if not touches(a, ly, u, hw) or not touches(b, ly, u, hw)}
+            added = []
             if not plane:
+                objs = {uid(t): t for t in items}
                 for u, c, r in vias:
-                    joined = sum(1 for su, _, a, b, hw in segs
-                                 if su not in dead and (math.dist(c, a) <= r + hw or math.dist(c, b) <= r + hw))
-                    if joined < 2 and not any(on_pad(c, ly, r) for ly in COPPER):
+                    if any(on_pad(c, ly, r) for ly in COPPER):
+                        continue
+                    hits = [(su, ly, a if math.dist(c, a) <= r + hw else b) for su, ly, a, b, hw in segs
+                            if su not in dead and (math.dist(c, a) <= r + hw or math.dist(c, b) <= r + hw)]
+                    if len(hits) < 2:
+                        dead.add(u)
+                    elif len({ly for _, ly, _ in hits}) < 2:
+                        # it only joins tracks on one layer: join them at its centre instead, drop the via
+                        for su, ly, p in hits:
+                            if math.dist(p, c) > EPS:
+                                added.append(new_seg(board, objs[su], p, c))
                         dead.add(u)
             if not dead:
                 break
-            keep = [t for t in items if uid(t) not in dead]
+            keep = [t for t in items if uid(t) not in dead] + added
             for t in [t for t in items if uid(t) in dead]:  # ids are read before anything is deleted
                 if is_via(t):
                     nvia += 1

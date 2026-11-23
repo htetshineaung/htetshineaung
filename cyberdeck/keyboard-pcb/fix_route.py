@@ -5,7 +5,7 @@
 --rip MM first deletes unlocked tracks of other nets within MM of the pad, then routes the pad,
 then reconnects every net it ripped up.
 
-Each REF.PAD is routed to the nearest copper (pad, track or via) of the same net that is not
+Tracks come out at 0, 45 or 90 degrees.  Each REF.PAD is routed to the nearest copper (pad, track or via) of the same net that is not
 already connected to it.  Grid 0.05 mm, track 0.15 mm, the board's own clearance, vias 0.5/0.3 mm; inner layers are planes
 (vias pass through them), so only the outer layers are searched (plus In2.Cu with --inner).  Refill zones afterwards.
 """
@@ -76,6 +76,8 @@ def collect(net):
             d = ("s", (T(a.x), T(a.y), T(b.x), T(b.y), T(t.GetWidth()) / 2), t)
             if t.GetLayer() in obs:
                 (tgt if same else obs)[t.GetLayer()].append(d)
+            elif not same and t.GetLayer() == pcbnew.In2_Cu:  # not routed on, but a via passes through it
+                obs.setdefault("via_only", []).append(d)
     edges = []
     for d in board.GetDrawings():
         if d.GetLayer() == pcbnew.Edge_Cuts:
@@ -163,6 +165,7 @@ def route(ref, num):
     obs, tgt, edges = collect(net)
     idx = [Index(obs[ly]) for ly in LAYERS]
     hidx = Index(obs.get("hole", []))
+    vidx = Index(obs.get("via_only", []))
     eidx = Index([("s", (*e, 0.0), None) for e in edges])
     sx, sy = T(pad.GetPosition().x), T(pad.GetPosition().y)
     slayer = pcbnew.F_Cu if pad.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
@@ -200,6 +203,7 @@ def route(ref, num):
         x, y = box[0] + ix * G, box[1] + iy * G
         good = all(dist_to(it, x, y) >= VIA_D / 2 + CLR for li in range(len(LAYERS)) for it in idx[li].near(x, y))
         good = good and all(dist_to(it, x, y) >= VIA_DR / 2 + 0.25 for it in hidx.near(x, y))
+        good = good and all(dist_to(it, x, y) >= VIA_D / 2 + CLR for it in vidx.near(x, y))
         vcache[(ix, iy)] = good
         return good
 
@@ -283,6 +287,27 @@ def route(ref, num):
                 return False
         return True
 
+    def octo(a, b):
+        """Corner points that join a and b with one 0/90 and one 45-degree segment: [] if a-b already
+        is one of those angles, else the two choices (straight part first, 45-degree part first)."""
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        ax, ay = abs(dx), abs(dy)
+        if min(ax, ay) < 1e-6 or abs(ax - ay) < 1e-6:
+            return []
+        d = min(ax, ay)
+        ex, ey = math.copysign(d, dx), math.copysign(d, dy)
+        return [(b[0] - ex, b[1] - ey), (a[0] + ex, a[1] + ey)]
+
+    def join(a, b, li):
+        """Corner points of a clear 0/45/90-degree join from a to b ([] = straight), or None."""
+        mids = octo(a, b)
+        if not mids:
+            return [] if clear(a, b, li) else None
+        for m in mids:
+            if clear(a, m, li) and clear(m, b, li):
+                return [m]
+        return None
+
     runs, cur = [], [pts[0]]
     for p in pts[1:]:
         if p[2] != cur[-1][2]:
@@ -295,10 +320,15 @@ def route(ref, num):
         li = run[0][2]
         i = 0
         while i < len(run) - 1:
+            # pull the path tight, but only with 0/45/90-degree segments
             j = len(run) - 1
-            while j > i + 1 and not clear(run[i], run[j], li):
+            mids = join(run[i], run[j], li)
+            while mids is None and j > i + 1:
                 j -= 1
-            add_track(run[i], run[j], LAYERS[li], netinfo); nseg += 1
+                mids = join(run[i], run[j], li)
+            chain = [run[i][:2]] + (mids or []) + [run[j][:2]]
+            for a_, b_ in zip(chain, chain[1:]):
+                add_track(a_, b_, LAYERS[li], netinfo); nseg += 1
             i = j
         if ri < len(runs) - 1:                                # via joins this run to the next one
             x, y = run[-1][0], run[-1][1]

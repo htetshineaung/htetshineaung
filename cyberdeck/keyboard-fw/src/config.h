@@ -22,12 +22,18 @@
 #define OLED_SH1106      0          // 1 if your 0.96" module uses the SH1106 controller (132 columns)
 #define OLED_FLIP        0          // 1 to rotate the picture 180 degrees
 
-// --- built-in trackball: DRV5033 hall switches (open drain, low near a magnet), click switch
-#define PIN_TB_UP        21
-#define PIN_TB_DOWN      22
-#define PIN_TB_LEFT      23
-#define PIN_TB_RIGHT     24
-#define PIN_TB_CLICK     27
+// --- trackball breakout (J6): each roller's hall sensor toggles its pin once per magnet pass;
+//     BTN pulls low when the ball is pressed. GPIO order matches the header so the PCB bus is straight.
+#define PIN_TB_CLICK     20
+#define PIN_TB_RIGHT     21
+#define PIN_TB_LEFT      22
+#define PIN_TB_DOWN      23
+#define PIN_TB_UP        24
+// its RGB backlight, through 100R each; set TB_LED_ACTIVE_LOW to 0 if yours lights when driven high
+#define PIN_TB_LED_G     27
+#define PIN_TB_LED_R     28
+#define PIN_TB_LED_B     29
+#define TB_LED_ACTIVE_LOW 1
 #define TB_PERIOD_MS     8          // motion report period
 #define TB_GAIN          3.0f       // pointer counts per hall edge at slow speed
 #define TB_ACCEL         0.35f      // extra gain per edge/period of speed

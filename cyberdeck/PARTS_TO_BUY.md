@@ -11,7 +11,7 @@ Everything except the keyboard PCB (ordered assembled from JLCPCB with the files
 | 1 | Raspberry Pi Active Cooler (official) | low profile, fits under the keyboard |
 | 1 | Waveshare 5inch DSI LCD (800 x 480, capacitive touch) | 121 x 76 mm outline; 4 corner standoffs |
 | 1 | Raspberry Pi 5 display cable, 22-pin to 15-pin, 200 mm | Pi 5 uses the small 22-pin connector; the screen has 15-pin |
-| 1 | BlackBerry-style trackball breakout (the blue board: VCC GND BTN RHT LFT DWN UP WHT GRN RED BLU) | soldered under the keyboard PCB with its own pin header |
+| 1 | BlackBerry-style trackball breakout (the blue board: VCC GND BTN RHT LFT DWN UP WHT GRN RED BLU) | soldered under the keyboard PCB with its own pin header, almost flush (see the washers below) |
 | 1 | 0.96" OLED 128 x 64, SSD1306, I2C, 4 pins in the order **GND VCC SCL SDA** | check the pin order on the listing photo |
 
 ## Power
@@ -40,8 +40,8 @@ Everything except the keyboard PCB (ordered assembled from JLCPCB with the files
 | Qty | Part | Where |
 |---|---|---|
 | 5 | M2 x 4 mm self-tapping (pan head) | keyboard PCB into the deck bosses |
-| 2 | M2 x 8 mm screws, low pan head + 2 M2 nuts | trackball module to the keyboard PCB |
-| 2 | M2 round spacers, 2.5 mm long (or print them) | between the trackball module and the keyboard PCB |
+| 2 | M2 x 6 mm screws, low pan head + 2 M2 nuts | trackball module to the keyboard PCB |
+| 1 bag | M2 nylon washers, 0.5 mm | between the trackball module and the keyboard PCB: the module sits almost flush so the ball stands 1-1.5 mm above the deck (solder its header without the black plastic spacer) |
 | 4 | M2.5 x 6 mm self-tapping screws | Pi 5 onto the base standoffs |
 | 4 | M2.5 x 4 mm screws | screen standoffs through the lid back |
 | 2 | M3 x 30 mm screws + 2 M3 nyloc nuts + 4 M3 nylon washers | hinge axles (tighten for friction) |

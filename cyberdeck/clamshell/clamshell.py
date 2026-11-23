@@ -71,10 +71,14 @@ kb_x0, kb_y0 = 12.0, 12.0    # grid front-left corner
 kb_cols, kb_rows = 11, 4
 space_cols = (4, 6)          # bottom row: columns 4..6 merged into the space bar
 
-# Trackball, built into the keyboard PCB: a 4-roller hall-effect mechanism (BlackBerry-style,
-# ~12 x 12 mm) soldered on the PCB; the ball comes up through the deck plate.  Measure yours.
-tb_cx, tb_cy = 124.0, 40.0
-tb_body = 12.0                # mechanism footprint on the PCB (square)
+# Trackball: the ready-made BlackBerry-style breakout hangs UNDER the keyboard PCB (its header
+# soldered through J6, two M2 screws); its ball unit rises through a 14 mm window in the PCB and a
+# square opening in the deck.  Same numbers as keyboard-pcb/circuit.py.
+tb_cx, tb_cy = 124.0, 44.0    # ball centre
+tb_body = 12.0                # ball unit frame (square) -> deck opening
+tb_mod = (tb_cx - 14.4, tb_cy - 15.3, tb_cx + 7.8, tb_cy + 13.7)   # breakout board outline
+tb_gap = 1.0                  # breakout top to keyboard PCB underside: two 0.5 mm washers (header without its plastic)
+tb_unit_h = 6.8               # MEASURE: ball top above the breakout board's top surface
 lr_w, lr_h, lr_y0 = 9.0, 7.0, 13.0
 
 # OLED 0.96" 128x64 (module 27 x 27, glass window 23 x 12) top-left above the keys
@@ -244,7 +248,7 @@ for x0, y0, x1, y1 in key_cells():
 web = rbox(kb_x0 - 2, kb_y0 - 2, sw_top, kb_x0 + kb_cols * key_px + 1, kb_y0 + kb_rows * key_py + 1, sw_top + mat_web, 2)
 lr_web = rbox(tb_cx - lr_w - 2.6, lr_y0 - 2, sw_top, tb_cx + lr_w + 2.6, lr_y0 + lr_h + 2, sw_top + mat_web, 2)
 mat = mat.union(web).union(lr_web)
-h = tb_body / 2 + 0.3       # the mechanism (about 5 mm tall) rises through a square opening in the plate
+h = tb_body / 2 + 0.3       # the ball unit rises through a square opening in the plate
 plate = plate.cut(box(tb_cx - h, tb_cy - h, plate_z - eps, tb_cx + h, tb_cy + h, BH + eps))
 plate = plate.cut(rbox(oled_cx - oled_win[0] / 2, oled_cy - oled_win[1] / 2, plate_z - eps,
                        oled_cx + oled_win[0] / 2, oled_cy + oled_win[1] / 2, BH + eps, 1.0))
@@ -320,5 +324,7 @@ if __name__ == "__main__":
                         os.path.join(out, "clam_assembled_open.stl"), **kw)
     cq.exporters.export(base.union(plate).union(mat).union(lid_back).union(bezel),
                         os.path.join(out, "clam_assembled_closed.stl"), **kw)
+tb_ball_top = kb_pcb_z - tb_gap + tb_unit_h
+print(f"Trackball: ball top {tb_ball_top - BH:+.1f} mm above the deck (aim for +1.0 .. +1.5: change tb_gap)")
 print(f"Clamshell: {W} x {D} mm, base {BH:.1f} mm, closed {lz0 + lid_t:.1f} mm | kb pcb z={kb_pcb_z:.1f} "
       f"plate z={plate_z:.1f} cap top={cap_top:.1f} pi_oy={pi_oy:.1f}")

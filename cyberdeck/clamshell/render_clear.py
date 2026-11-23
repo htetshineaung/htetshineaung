@@ -71,9 +71,12 @@ for (x0, y0, x1, y1) in C.key_cells():
         add("switches", C.box(x - 2.55, y - 2.55, kt, x + 2.55, y + 2.55, kt + C.sw_h), (0.85, 0.85, 0.88, 1))
 add("rp2040", C.box(64 - 3.5, 60 - 3.5, kz - 0.9, 64 + 3.5, 60 + 3.5, kz), (0.05, 0.05, 0.05, 1))
 add("rp2040", C.box(74 - 2.6, 60.5 - 2.6, kz - 1.8, 74 + 2.6, 60.5 + 2.6, kz), (0.05, 0.05, 0.05, 1))   # flash
-tb_top = kt + 5.0
-add("trackball_body", C.box(C.tb_cx - 6, C.tb_cy - 6, kt, C.tb_cx + 6, C.tb_cy + 6, kt + 4.2), (0.12, 0.12, 0.12, 1))
-add("trackball_ball", ball(C.tb_cx, C.tb_cy, tb_top, 7.0), (0.92, 0.18, 0.20, 1))
+# trackball breakout under the keyboard PCB: blue board, ball unit up through the window
+mtop = kz - C.tb_gap
+add("trackball_board", C.box(C.tb_mod[0], C.tb_mod[1], mtop - 1.6, C.tb_mod[2], C.tb_mod[3], mtop), (0.10, 0.30, 0.70, 1))
+add("trackball_body", C.box(C.tb_cx - 5.5, C.tb_cy - 5.5, mtop, C.tb_cx + 5.5, C.tb_cy + 5.5, mtop + C.tb_unit_h - 2.6),
+    (0.12, 0.12, 0.12, 1))
+add("trackball_ball", ball(C.tb_cx, C.tb_cy, mtop + C.tb_unit_h - 2.5, 5.0), (0.92, 0.18, 0.20, 1))
 oz = C.plate_z - 3.2
 add("oled_pcb", C.box(C.oled_cx - 13.5, C.oled_cy - 13.5, oz, C.oled_cx + 13.5, C.oled_cy + 13.5, oz + 1.2), (0.10, 0.25, 0.55, 1))
 add("oled_glass", C.box(C.oled_cx - 13, C.oled_cy - 8, oz + 1.2, C.oled_cx + 13, C.oled_cy + 8, oz + 2.6), (0.02, 0.02, 0.03, 1))

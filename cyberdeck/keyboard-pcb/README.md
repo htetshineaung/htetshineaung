@@ -49,9 +49,11 @@ KICAD7_FOOTPRINT_DIR=/usr/share/kicad/footprints /usr/bin/python3 gen_pcb.py
   LFT DWN UP WHT GRN RED BLU) sits *under* the board: its own 11-pin header is soldered through J6
   (plated holes, both boards), two M2 screws with 2.5 mm spacers (H6, H7) hold its other edge, and
   the ball comes up through a 14 × 14 mm window centred at (124, 44). The module's hall outputs and
-  click go straight to the RP2040 (GPIO21–24 up/down/left/right, GPIO27 click); its RGB LED goes
-  through 100 Ω R20–R22 to GPIO20/28/29 (works whichever way the module's LED is wired: the
-  firmware picks the polarity). WHT is not connected. The module runs from +3V3.
+  click go straight to the RP2040 and its RGB LED through 100 Ω R20–R22, on GPIOs chosen so the
+  RP2040 pins come in the same top-to-bottom order as the header (GPIO20 click, 21 right, 22 left,
+  23 down, 24 up, 27 / 28 / 29 LED G / R / B): the wires run as one straight bus. Each LED resistor
+  sits level with its header pin. Either LED polarity works (the firmware picks it). WHT is not
+  connected. The module runs from +3V3.
 - **Rev B routing** (`tb_pipeline.sh`, on the Mac with KiCad 10): `apply_tb_module.py` removes the
   rev A hall sensors and their tracks, adds J6 / R20–R22 / H6–H7 / the window and clears copper they
   clash with (pad nets are checked against the generated board by hash); `fix_route.py` routes the
@@ -82,9 +84,9 @@ KICAD7_FOOTPRINT_DIR=/usr/share/kicad/footprints /usr/bin/python3 gen_pcb.py
 | RP2040 | Function | RP2040 | Function |
 |---|---|---|---|
 | GPIO0 / 1 | UART0 TX / RX → Pi | GPIO18 / 19 | I²C1 SDA / SCL |
-| GPIO2–5 | ROW0–3 | GPIO21–24, 27 | trackball up/down/left/right, click |
+| GPIO2–5 | ROW0–3 | GPIO20–24 | trackball click / right / left / down / up |
 | GPIO6–17 | COL0–11 | GPIO25 | status LED |
-| GPIO26 | battery sense (ADC0) | GPIO20 / 28 / 29 | trackball LED red / green / blue |
+| GPIO26 | battery sense (ADC0) | GPIO27 / 28 / 29 | trackball LED green / red / blue |
 
 | J6 pin | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|

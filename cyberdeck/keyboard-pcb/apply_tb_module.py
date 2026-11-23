@@ -9,7 +9,7 @@ without re-routing the whole board.
 3. adds the ball window (Edge.Cuts), the breakout header J6, LED resistors R20-R22, screw holes H6/H7
    and the module outline on the fab layers, exactly where gen_pcb.py puts them;
 4. deletes other-net copper that the new pads, holes and window clash with (prints those nets);
-5. hides MPN/LCSC fields that KiCad 8+ printed on the silkscreen, puts RP2040 pins 31/40/41 (GPIO20/28/29) on the LED nets, then checks every pad's net against
+5. hides MPN/LCSC fields that KiCad 8+ printed on the silkscreen, puts RP2040 pins 31-41 on the trackball nets in the header's order, then checks every pad's net against
    the generated clam_kbd.kicad_pcb (hash).
 Next: route the open pads with fix_route.py --inner, trim_dangling.py, then export_jlc.sh (refill + DRC).
 Coordinates are KiCad board millimetres of the generated clam_kbd.kicad_pcb.  KiCad 7 to 10.
@@ -40,17 +40,19 @@ ADD = [  # ref, library, footprint, x, y, rotation, bottom side, value, pad nets
      {"1": "+3V3", "2": "GND", "3": "TB_CLICK", "4": "TB_RIGHT", "5": "TB_LEFT", "6": "TB_DOWN", "7": "TB_UP",
       "9": "TB_LED_G", "10": "TB_LED_R", "11": "TB_LED_B"},
      {"MPN": "trackball breakout header (solder the module's pins through)"}, "76760a05-ed06-4948-b003-c472cc825898"),
-    ("R20", "Resistor_SMD", "R_0402_1005Metric", 126.3, 84.8, 0, True, "100R", {"1": "TB_R", "2": "TB_LED_R"},
+    ("R20", "Resistor_SMD", "R_0402_1005Metric", 126.3, 87.16, 0, True, "100R", {"1": "TB_R", "2": "TB_LED_R"},
      R_FIELDS, "5399cd42-72f3-4bd9-894c-11d7845af9b8"),
-    ("R21", "Resistor_SMD", "R_0402_1005Metric", 126.3, 86.8, 0, True, "100R", {"1": "TB_G", "2": "TB_LED_G"},
+    ("R21", "Resistor_SMD", "R_0402_1005Metric", 126.3, 84.62, 0, True, "100R", {"1": "TB_G", "2": "TB_LED_G"},
      R_FIELDS, "2b38a748-47d4-49a9-8510-8e0beae4855f"),
-    ("R22", "Resistor_SMD", "R_0402_1005Metric", 126.3, 88.8, 0, True, "100R", {"1": "TB_B", "2": "TB_LED_B"},
+    ("R22", "Resistor_SMD", "R_0402_1005Metric", 126.3, 89.7, 0, True, "100R", {"1": "TB_B", "2": "TB_LED_B"},
      R_FIELDS, "60831840-9dbc-4d4d-bf11-dece1fd75c2a"),
     ("H6", "MountingHole", "MountingHole_2.2mm_M2", 150.4, 63.7, 0, False, None, {}, {}, None),
     ("H7", "MountingHole", "MountingHole_2.2mm_M2", 150.4, 87.0, 0, False, None, {}, {}, None),
 ]
-U1_NETS = {"31": "TB_R", "40": "TB_G", "41": "TB_B"}
-EXPECTED_HASH = "7fbcbfe8a38f688b06b1e93676eebc53"  # pad_net_hash() of the generated clam_kbd.kicad_pcb
+# RP2040 pins 31-41 in the breakout header's order (click, right, left, down, up, LED G, R, B)
+U1_NETS = {"31": "TB_CLICK", "32": "TB_RIGHT", "34": "TB_LEFT", "35": "TB_DOWN", "36": "TB_UP",
+           "39": "TB_G", "40": "TB_R", "41": "TB_B"}
+EXPECTED_HASH = "49c0031eb0c082c242d0b97b94ac0e3e"  # pad_net_hash() of the generated clam_kbd.kicad_pcb
 CLR, EDGE, HOLE_R, HOLE_CLR, SCREW_R = 0.15 + 0.03, 0.3 + 0.03, 1.1, 0.25 + 0.03, 2.0
 COPPER = (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu)
 
@@ -250,7 +252,7 @@ def main(src, dst):
     u1 = board.FindFootprintByReference("U1")
     for pad in u1.Pads():
         if pad.GetNumber() in U1_NETS:
-            if pad.GetNetname():
+            if pad.GetNetname() and pad.GetNetname() not in TB_NETS:
                 print(f"warning: U1.{pad.GetNumber()} was on {pad.GetNetname()}")
             pad.SetNet(net(board, U1_NETS[pad.GetNumber()]))
 

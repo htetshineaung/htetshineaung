@@ -1,7 +1,11 @@
 """Re-do a tight fan-out: rip the given nets near a spot, then route their pads in different orders
 until every one gets out (fix_route.py does each route).
 
-    python cluster_route.py <in.kicad_pcb> <out.kicad_pcb> X Y RADIUS REF.PAD [REF.PAD ...] [--rip-also NET:x0,y0,x1,y1 ...] [--tries N]
+    python cluster_route.py <in.kicad_pcb> <out.kicad_pcb> X Y RADIUS REF.PAD [REF.PAD ...] [--rip-also NET:x0,y0,x1,y1 ...]
+        [--rip-nets NET,NET] [--reconnect NET,NET] [--outer] [--tries N]
+
+--rip-nets are ripped near the spot too and reconnected after the pads; --reconnect nets are only
+reconnected.  --outer keeps the pads' routes on F.Cu / B.Cu (reconnections may still use In2.Cu).
 """
 import math
 import random
@@ -79,9 +83,11 @@ while len(orders) < tries:
         orders.append(o)
 best = None
 for i, order in enumerate(orders):
-    out = subprocess.run([sys.executable, "fix_route.py", tmp, dst] + order + ["--inner"] +
-                         [x for n in extra + recon for x in ("--net", n)],
-                         capture_output=True, text=True).stdout
+    out = subprocess.run([sys.executable, "fix_route.py", tmp, dst] + order +
+                         ([] if "--outer" in argv else ["--inner"]), capture_output=True, text=True).stdout
+    if extra + recon:
+        out += subprocess.run([sys.executable, "fix_route.py", dst, dst, "--inner"] +
+                              [x for n in extra + recon for x in ("--net", n)], capture_output=True, text=True).stdout
     failed = [l.split()[0] + "." + l.split()[1] for l in out.splitlines() if "no path" in l or "no target" in l]
     failed += [l.split()[1] for l in out.splitlines() if l.startswith("reconnect") and "FAILED" in l]
     print(f"try {i + 1}: {' '.join(order)} -> {'OK' if not failed else 'failed ' + ' '.join(failed)}", flush=True)

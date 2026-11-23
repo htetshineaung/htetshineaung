@@ -82,9 +82,10 @@ rp = {"1": "+3V3", "10": "+3V3", "22": "+3V3", "33": "+3V3", "42": "+3V3", "49":
       "8": "COL0", "9": "COL1", "11": "COL2", "12": "COL3", "13": "COL4", "14": "COL5",  # GPIO6..11
       "15": "COL6", "16": "COL7", "17": "COL8", "18": "COL9", "27": "COL10", "28": "COL11",  # GPIO12..17
       "29": "I2C_SDA", "30": "I2C_SCL",                 # GPIO18/19 = I2C1
-      "32": "TB_UP", "34": "TB_DOWN", "35": "TB_LEFT", "36": "TB_RIGHT",   # GPIO21..24: trackball
-      "39": "TB_CLICK",                                 # GPIO27: ball click
-      "31": "TB_R", "40": "TB_G", "41": "TB_B",         # GPIO20 / 28 / 29: trackball RGB backlight
+      # trackball: pins in the same top-to-bottom order as the breakout header, so the wires run as
+      # one straight bus: GPIO20 click, 21 right, 22 left, 23 down, 24 up, 27 / 28 / 29 LED G / R / B
+      "31": "TB_CLICK", "32": "TB_RIGHT", "34": "TB_LEFT", "35": "TB_DOWN", "36": "TB_UP",
+      "39": "TB_G", "40": "TB_R", "41": "TB_B",
       "37": "LED",                                      # GPIO25
       "38": "VBAT_SENSE",                               # GPIO26 / ADC0
       }
@@ -132,9 +133,10 @@ part("J6", "Connector_Generic:Conn_01x11", "Connector_PinHeader_2.54mm:PinHeader
                    "7": "TB_UP", "9": "TB_LED_G", "10": "TB_LED_R", "11": "TB_LED_B"},
      (TB_PIN_X, TB_VCC_Y), side="top", mpn="trackball breakout header (solder the module's pins through)",
      dnp=True)
-for i, (col, gpio_net) in enumerate((("R", "TB_R"), ("G", "TB_G"), ("B", "TB_B"))):
+for i, (col, gpio_net, pin) in enumerate((("R", "TB_R", 10), ("G", "TB_G", 9), ("B", "TB_B", 11))):
+    # each LED resistor sits level with its header pin: a short straight link
     part(f"R{20 + i}", "Device:R_Small", R0402, "100R", {"1": gpio_net, "2": f"TB_LED_{col}"},
-         (TB_PIN_X - 4.3, TB_VCC_Y - 20.5 - 2.0 * i), rot=0, mpn="0402WGF1000TCE", lcsc="C25076")
+         (TB_PIN_X - 4.3, TB_VCC_Y - 2.54 * (pin - 1)), rot=0, mpn="0402WGF1000TCE", lcsc="C25076")
 
 # --- connectors (all on the bottom, cables run to the Pi / power board)
 part("J1", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "PI_LINK",
