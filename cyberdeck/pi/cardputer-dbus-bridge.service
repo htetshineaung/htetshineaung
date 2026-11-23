@@ -1,0 +1,12 @@
+[Unit]
+Description=Relay desktop notifications to the Cardputer screen
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/lib/cardputer/cardputer_dbus_bridge.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,5 @@
+__pycache__/
+analysis/
+*.kicad_prl
+clam_kbd.net
+*-backups/
