@@ -6,9 +6,9 @@ PCB (gen_pcb.py), so they cannot disagree.
 
 Board: 4-layer (In1 solid GND plane, In2 extra routing layer), 1.0 mm FR4, sits under the clamshell deck (see ../clamshell/clamshell.py).
   Top:    46 tactile switches (XKB TS-1187A 5.1x5.1x1.5 mm), OLED pin pads, BOOT/RESET, LED,
-          and the built-in trackball: a 4-roller hall-effect mechanism (BlackBerry-style, as in
-          the Pimoroni trackball) sits on the board, 4 DRV5033 omnipolar hall switches read its roller magnets,
-          a KMR2 switch under the ball is the click.
+          and the trackball: a BlackBerry-style trackball breakout (VCC GND BTN RHT LFT DWN UP WHT GRN
+          RED BLU) is fixed UNDER this board - its own pin header is soldered through both boards (J6),
+          two M2 screws with 2.5 mm spacers hold its other edge, and the ball comes up through a window.
   Bottom: RP2040 + flash + crystal + 3.3 V LDO, key diodes, connectors.
 
 Coordinates are CASE coordinates in mm (x right, y from the front edge toward the hinge),
@@ -22,17 +22,23 @@ step-down. A USB connector is kept for flashing firmware only.
 KEY_PX, KEY_PY = 8.4, 7.6
 KEY_W, KEY_H = 7.4, 6.6
 KB_X0, KB_Y0 = 12.0, 12.0
-TB_CX, TB_CY = 124.0, 40.0
+TB_CX, TB_CY = 124.0, 44.0     # trackball ball centre
 LR_W, LR_H, LR_Y0 = 9.0, 7.0, 13.0
 OLED_CX, OLED_CY = 24.0, 56.5
 
-BOARD = dict(x0=3.5, y0=4.0, x1=136.5, y1=76.0, r=4.0, notch=None)   # one solid board
-# Trackball mechanism (measure yours before ordering): body outline and where each roller's
-# magnet passes over the board, relative to the ball centre (TB_CX, TB_CY).
-TB_BODY = (12.0, 12.0)                                   # footprint of the mechanism, mm
-TB_HALL = {"TB_UP": (0.0, 5.0), "TB_DOWN": (0.0, -5.0), "TB_LEFT": (-5.0, 0.0), "TB_RIGHT": (5.0, 0.0)}
+# Trackball breakout geometry, ESTIMATED from the product photo (confirm from the listing):
+# board 22.2 x 29 mm; header column 1.0 mm in from one long edge, 11 pins at 2.54 mm, VCC first;
+# ball centre 13.4 mm from the header column and 11.7 mm below the VCC pin; two mounting holes
+# 19.8 mm from the header column, 0.6 mm above the VCC pin and 22.7 mm below it.
+TB_PIN_X = TB_CX - 13.4                  # header column (J6), under this board's hole row
+TB_VCC_Y = TB_CY + 11.7                  # J6 pin 1
+TB_MOD = (TB_PIN_X - 1.0, TB_VCC_Y - 27.0, TB_PIN_X - 1.0 + 22.2, TB_VCC_Y + 2.0)   # module outline
+TB_WINDOW = (TB_CX - 7.0, TB_CY - 7.0, TB_CX + 7.0, TB_CY + 7.0, 2.0)             # cut-out, corner radius
+TB_HOLES = [(TB_PIN_X + 19.8, TB_VCC_Y + 0.6), (TB_PIN_X + 19.8, TB_VCC_Y - 22.7)]   # M2, module screws
+BOARD = dict(x0=3.5, y0=4.0, x1=136.5, y1=76.0, r=4.0, notch=None, cutouts=[TB_WINDOW])
 HOLES = [(7.0, 8.0), (108.5, 8.0), (22.0, 73.5), (108.5, 71.0), (64.0, 73.5)]   # M2, to deck bosses
 NO_BOTTOM_ZONE = (0.0, 27.0, 20.5, 80.0)               # above the Pi's USB jacks: no bottom parts
+NO_BOTTOM_ZONES = [NO_BOTTOM_ZONE, (TB_MOD[0] - 0.8, TB_MOD[1] - 0.8, TB_MOD[2] + 0.8, TB_MOD[3] + 0.8)]
 
 # ------------------------------------------------------------------ key layout
 ROWS = [  # matrix row 0 = top row of keys (q..), as printed on the key mat
@@ -76,8 +82,9 @@ rp = {"1": "+3V3", "10": "+3V3", "22": "+3V3", "33": "+3V3", "42": "+3V3", "49":
       "8": "COL0", "9": "COL1", "11": "COL2", "12": "COL3", "13": "COL4", "14": "COL5",  # GPIO6..11
       "15": "COL6", "16": "COL7", "17": "COL8", "18": "COL9", "27": "COL10", "28": "COL11",  # GPIO12..17
       "29": "I2C_SDA", "30": "I2C_SCL",                 # GPIO18/19 = I2C1
-      "32": "TB_UP", "34": "TB_DOWN", "35": "TB_LEFT", "36": "TB_RIGHT",   # GPIO21..24: hall switches
+      "32": "TB_UP", "34": "TB_DOWN", "35": "TB_LEFT", "36": "TB_RIGHT",   # GPIO21..24: trackball
       "39": "TB_CLICK",                                 # GPIO27: ball click
+      "31": "TB_R", "40": "TB_G", "41": "TB_B",         # GPIO20 / 28 / 29: trackball RGB backlight
       "37": "LED",                                      # GPIO25
       "38": "VBAT_SENSE",                               # GPIO26 / ADC0
       }
@@ -118,22 +125,16 @@ part("C2", "Device:C_Small", C0402, "1uF", {"1": "+3V3", "2": "GND"}, (49.5, 66.
 part("C3", "Device:C_Small", C0603, "10uF", {"1": "+3V3", "2": "GND"}, (52.0, 63.0), rot=90, mpn="CL10A106KP8NNNC", lcsc="C19702")
 part("D1", "Device:D_Schottky_Small", "Diode_SMD:D_SOD-123", "B5819W", {"1": "+5V", "2": "VBUS_USB"}, (38.0, 66.0), rot=90, mpn="B5819W", lcsc="C8598")
 
-# --- built-in trackball: 4 hall switches under the roller magnets, click switch under the ball.
-# DRV5033 outputs are open drain: 10k pull-ups to 3V3 (the RP2040's own pull-ups work too).
-for i, (net, (dx, dy)) in enumerate(TB_HALL.items()):
-    hx, hy = TB_CX + dx, TB_CY + dy
-    part(f"U{4 + i}", "Sensor_Magnetic:DRV5033FAxDBZ", "Package_TO_SOT_SMD:SOT-23", "DRV5033FA",
-         {"1": "+3V3", "2": net, "3": "GND"}, (hx, hy), side="top", rot=(90 if dx == 0 else 0),
-         mpn="DRV5033FAQDBZR", lcsc="C2869057")
-    ox, oy = (6.5 if dx >= 0 else -6.5, 0.0) if dy == 0 else (0.0, 6.0 if dy > 0 else -6.0)
-    part(f"C{20 + i}", "Device:C_Small", C0402, "100nF", {"1": "+3V3", "2": "GND"},
-         (hx + ox + (1.2 if dy != 0 else 0), hy + oy + (0 if dy != 0 else 1.2)), side="top", rot=90,
-         mpn="CL05B104KO5NNNC", lcsc="C1525")
-    part(f"R{20 + i}", "Device:R_Small", R0402, "10k", {"1": "+3V3", "2": net},
-         (hx + ox - (1.2 if dy != 0 else 0), hy + oy - (0 if dy != 0 else 1.2)), side="top", rot=90,
-         mpn="0402WGF1002TCE", lcsc="C25744")
-part("SW102", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", "TB_CLICK",
-     {"1": "TB_CLICK", "2": "GND"}, (TB_CX, TB_CY), side="top", mpn="KMR221GLFS", lcsc="C72443")
+# --- trackball breakout: its header is soldered straight through J6 (holes only, nothing placed by
+# JLCPCB). RGB backlight lines get 100R series resistors (the module's LED wiring is unknown).
+part("J6", "Connector_Generic:Conn_01x11", "Connector_PinHeader_2.54mm:PinHeader_1x11_P2.54mm_Vertical",
+     "TRACKBALL", {"1": "+3V3", "2": "GND", "3": "TB_CLICK", "4": "TB_RIGHT", "5": "TB_LEFT", "6": "TB_DOWN",
+                   "7": "TB_UP", "9": "TB_LED_G", "10": "TB_LED_R", "11": "TB_LED_B"},
+     (TB_PIN_X, TB_VCC_Y), side="top", mpn="trackball breakout header (solder the module's pins through)",
+     dnp=True)
+for i, (col, gpio_net) in enumerate((("R", "TB_R"), ("G", "TB_G"), ("B", "TB_B"))):
+    part(f"R{20 + i}", "Device:R_Small", R0402, "100R", {"1": gpio_net, "2": f"TB_LED_{col}"},
+         (TB_PIN_X - 4.3, TB_VCC_Y - 20.5 - 2.0 * i), rot=0, mpn="0402WGF1000TCE", lcsc="C25076")
 
 # --- connectors (all on the bottom, cables run to the Pi / power board)
 part("J1", "Connector_Generic:Conn_01x04", "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal", "PI_LINK",

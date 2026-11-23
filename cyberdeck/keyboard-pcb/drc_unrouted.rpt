@@ -1,15 +1,7 @@
 ** Drc report for clam_kbd.kicad_pcb **
-** Created on 2026-11-22 15:10:58 **
+** Created on 2026-11-23 15:29:34 **
 
-** Found 191 DRC violations **
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(138.0000 mm, 86.0000 mm): Line on F.Silkscreen
-    @(-1.1625 mm, -1.5100 mm): Polygon on F.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(138.0000 mm, 74.0000 mm): Line on F.Silkscreen
-    @(-1.1625 mm, -1.5100 mm): Polygon on F.Silkscreen
+** Found 180 DRC violations **
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
     @(50.0000 mm, 95.0000 mm): PCB Text 'CLAMSHELL KB  rev A RP2040 · 42 ke...' on B.Silkscreen
@@ -32,89 +24,85 @@
     @(50.0000 mm, 95.0000 mm): PCB Text 'CLAMSHELL KB  rev A RP2040 · 42 ke...' on B.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(80.2004 mm, 57.3282 mm): Reference 'C16'
     @(80.3900 mm, 56.3900 mm): Line on B.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
     @(80.2004 mm, 57.3282 mm): Reference 'C16'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
     @(81.0400 mm, 56.3900 mm): Line on B.Silkscreen
+    @(80.2004 mm, 57.3282 mm): Reference 'C16'
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(94.5186 mm, 58.4313 mm): Line on B.Silkscreen
-    @(93.9375 mm, 58.5700 mm): Reference 'R10'
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(79.9577 mm, 52.1012 mm): Reference 'C17'
     @(79.6892 mm, 55.2400 mm): Line on B.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(129.1400 mm, 105.1078 mm): Line on B.Silkscreen
-    @(129.1700 mm, 104.2500 mm): Reference 'R9'
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(83.8400 mm, 68.3453 mm): Line on B.Silkscreen
-    @(84.0361 mm, 68.6202 mm): Reference 'C11'
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(82.5161 mm, 68.7280 mm): Line on B.Silkscreen
-    @(82.5700 mm, 69.4375 mm): Reference 'R5'
+    @(79.9577 mm, 52.1012 mm): Reference 'C17'
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
     @(87.7600 mm, 68.2375 mm): Reference 'C14'
     @(87.5900 mm, 68.3453 mm): Line on B.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(85.3600 mm, 51.7625 mm): Reference 'C6'
     @(85.2400 mm, 51.8703 mm): Line on B.Silkscreen
+    @(85.3600 mm, 51.7625 mm): Reference 'C6'
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(105.0000 mm, 48.9480 mm): Reference 'TP3'
-    @(102.5000 mm, 48.9480 mm): Reference 'TP2'
+    @(129.1700 mm, 104.2500 mm): Reference 'R9'
+    @(129.1400 mm, 105.1078 mm): Line on B.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(94.5186 mm, 58.4313 mm): Line on B.Silkscreen
+    @(93.9375 mm, 58.5700 mm): Reference 'R10'
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
     @(86.6700 mm, 51.7161 mm): Line on B.Silkscreen
     @(86.7600 mm, 51.7625 mm): Reference 'C10'
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
+    @(105.0000 mm, 48.9480 mm): Reference 'TP3'
+    @(102.5000 mm, 48.9480 mm): Reference 'TP2'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(82.5700 mm, 69.4375 mm): Reference 'R5'
+    @(82.5161 mm, 68.7280 mm): Line on B.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
     @(84.7005 mm, 70.9600 mm): Reference 'R3'
     @(84.6307 mm, 70.5612 mm): Line on B.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(86.1507 mm, 70.4533 mm): Reference 'C15'
-    @(86.1311 mm, 70.7541 mm): Line on B.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(150.0000 mm, 74.0000 mm): Line on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(138.0000 mm, 86.0000 mm): Line on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(138.0000 mm, 74.0000 mm): Line on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(150.0000 mm, 86.0000 mm): Line on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(85.3600 mm, 51.7625 mm): Reference 'C6'
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(84.7005 mm, 70.9600 mm): Reference 'R3'
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
     @(84.0361 mm, 68.6202 mm): Reference 'C11'
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(80.2004 mm, 57.3282 mm): Reference 'C16'
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(87.7600 mm, 68.2375 mm): Reference 'C14'
+    @(83.8400 mm, 68.3453 mm): Line on B.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(86.1311 mm, 70.7541 mm): Line on B.Silkscreen
+    @(86.1507 mm, 70.4533 mm): Reference 'C15'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(126.3000 mm, 87.9700 mm): Reference 'R21'
+    @(126.1464 mm, 88.4200 mm): Line on B.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(126.3000 mm, 85.9700 mm): Reference 'R20'
+    @(126.1464 mm, 86.4200 mm): Line on B.Silkscreen
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; Severity: warning
     @(82.5700 mm, 69.4375 mm): Reference 'R5'
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; Severity: warning
+    @(84.7005 mm, 70.9600 mm): Reference 'R3'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(129.1700 mm, 104.2500 mm): Reference 'R9'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(84.0361 mm, 68.6202 mm): Reference 'C11'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
     @(83.7892 mm, 53.2400 mm): Reference 'Y1'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(79.9577 mm, 52.1012 mm): Reference 'C17'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(87.7600 mm, 68.2375 mm): Reference 'C14'
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; Severity: warning
     @(86.7600 mm, 51.7625 mm): Reference 'C10'
@@ -126,10 +114,10 @@
     @(93.9375 mm, 58.5700 mm): Reference 'R10'
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; Severity: warning
-    @(129.1700 mm, 104.2500 mm): Reference 'R9'
+    @(85.3600 mm, 51.7625 mm): Reference 'C6'
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; Severity: warning
-    @(79.9577 mm, 52.1012 mm): Reference 'C17'
+    @(80.2004 mm, 57.3282 mm): Reference 'C16'
 [starved_thermal]: Thermal relief connection to zone incomplete (zone min spoke count 2; actual 1)
     Local override; Severity: error
     @(23.5000 mm, 116.0000 mm): Zone [GND] on B.Cu
@@ -140,175 +128,31 @@
     @(77.5000 mm, 45.5000 mm): Pad 2 [GND] of J1 on B.Cu
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(119.7000 mm, 104.7000 mm): Footprint SW43
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(142.8000 mm, 69.0000 mm): Footprint R20
-[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
-    Local override; Severity: warning
-    @(42.0000 mm, 46.5000 mm): Footprint H3
-[lib_footprint_issues]: Footprint 'PinHeader_1x04_P2.54mm_Vertical' not found in library 'Connector_PinHeader_2.54mm'.
-    Local override; Severity: warning
-    @(40.1900 mm, 51.7000 mm): Footprint J2
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 81.9000 mm): Footprint SW9
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 81.9000 mm): Footprint SW3
-[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
-    Local override; Severity: warning
-    @(128.5000 mm, 49.0000 mm): Footprint H4
-[lib_footprint_issues]: Footprint 'SOT-23' not found in library 'Package_TO_SOT_SMD'.
-    Local override; Severity: warning
-    @(144.0000 mm, 85.0000 mm): Footprint U5
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 97.1000 mm): Footprint SW25
-[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
-    Local override; Severity: warning
-    @(27.0000 mm, 112.0000 mm): Footprint H1
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
     @(69.3000 mm, 89.5000 mm): Footprint SW16
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 81.9000 mm): Footprint SW11
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 89.5000 mm): Footprint SW19
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 81.9000 mm): Footprint SW2
-[lib_footprint_issues]: Footprint 'SOT-23' not found in library 'Package_TO_SOT_SMD'.
-    Local override; Severity: warning
-    @(139.0000 mm, 80.0000 mm): Footprint U6
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 89.5000 mm): Footprint SW20
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 104.7000 mm): Footprint SW34
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(145.2000 mm, 91.0000 mm): Footprint C21
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 89.5000 mm): Footprint SW12
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(132.5000 mm, 78.8000 mm): Footprint C22
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(78.0000 mm, 59.0000 mm): Footprint R7
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 97.1000 mm): Footprint SW30
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 89.5000 mm): Footprint SW21
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_NO_CK_KMR2' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(118.0000 mm, 54.0000 mm): Footprint SW100
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(132.5000 mm, 81.2000 mm): Footprint R22
-[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
-    Local override; Severity: warning
-    @(84.0000 mm, 46.5000 mm): Footprint H5
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 97.1000 mm): Footprint SW33
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(69.3000 mm, 81.9000 mm): Footprint SW5
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(142.8000 mm, 91.0000 mm): Footprint R21
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(149.1000 mm, 103.5000 mm): Footprint SW45
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 97.1000 mm): Footprint SW23
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 89.5000 mm): Footprint SW13
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 104.7000 mm): Footprint SW40
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_NO_CK_KMR2' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(144.0000 mm, 80.0000 mm): Footprint SW102
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 97.1000 mm): Footprint SW32
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 89.5000 mm): Footprint SW15
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
     @(52.5000 mm, 89.5000 mm): Footprint SW14
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(44.1000 mm, 97.1000 mm): Footprint SW24
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(145.2000 mm, 69.0000 mm): Footprint C20
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 81.9000 mm): Footprint SW1
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 81.9000 mm): Footprint SW4
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(69.3000 mm, 97.1000 mm): Footprint SW27
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 81.9000 mm): Footprint SW8
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 104.7000 mm): Footprint SW42
-[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
-    Local override; Severity: warning
-    @(128.5000 mm, 112.0000 mm): Footprint H2
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 89.5000 mm): Footprint SW22
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
     @(77.7000 mm, 89.5000 mm): Footprint SW17
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(60.9000 mm, 97.1000 mm): Footprint SW26
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(155.5000 mm, 81.2000 mm): Footprint R23
+    @(86.1000 mm, 89.5000 mm): Footprint SW18
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(52.5000 mm, 104.7000 mm): Footprint SW36
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    @(35.7000 mm, 89.5000 mm): Footprint SW12
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
     Local override; Severity: warning
-    @(60.9000 mm, 104.7000 mm): Footprint SW37
+    @(150.4000 mm, 87.0000 mm): Footprint H7
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
     @(77.7000 mm, 97.1000 mm): Footprint SW28
-[lib_footprint_issues]: Footprint 'LED_0603_1608Metric' not found in library 'LED_SMD'.
-    Local override; Severity: warning
-    @(78.0000 mm, 56.0000 mm): Footprint D2
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(102.9000 mm, 104.7000 mm): Footprint SW41
+    @(52.5000 mm, 97.1000 mm): Footprint SW25
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(86.1000 mm, 89.5000 mm): Footprint SW18
-[lib_footprint_issues]: Footprint 'SOT-23' not found in library 'Package_TO_SOT_SMD'.
-    Local override; Severity: warning
-    @(149.0000 mm, 80.0000 mm): Footprint U7
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 104.7000 mm): Footprint SW35
+    @(52.5000 mm, 81.9000 mm): Footprint SW3
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
     @(69.3000 mm, 104.7000 mm): Footprint SW38
@@ -317,280 +161,403 @@
     @(86.1000 mm, 81.9000 mm): Footprint SW7
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
+    @(119.7000 mm, 104.7000 mm): Footprint SW43
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 81.9000 mm): Footprint SW10
+[lib_footprint_issues]: Footprint 'LED_0603_1608Metric' not found in library 'LED_SMD'.
+    Local override; Severity: warning
+    @(78.0000 mm, 56.0000 mm): Footprint D2
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 104.7000 mm): Footprint SW42
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(128.5000 mm, 112.0000 mm): Footprint H2
+[lib_footprint_issues]: Footprint 'PinHeader_1x04_P2.54mm_Vertical' not found in library 'Connector_PinHeader_2.54mm'.
+    Local override; Severity: warning
+    @(40.1900 mm, 51.7000 mm): Footprint J2
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 89.5000 mm): Footprint SW13
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(69.3000 mm, 97.1000 mm): Footprint SW27
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(42.0000 mm, 46.5000 mm): Footprint H3
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(52.5000 mm, 104.7000 mm): Footprint SW36
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 81.9000 mm): Footprint SW4
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 104.7000 mm): Footprint SW41
+[lib_footprint_issues]: Footprint 'PinHeader_1x11_P2.54mm_Vertical' not found in library 'Connector_PinHeader_2.54mm'.
+    Local override; Severity: warning
+    @(130.6000 mm, 64.3000 mm): Footprint J6
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(150.4000 mm, 63.7000 mm): Footprint H6
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 97.1000 mm): Footprint SW33
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(35.7000 mm, 97.1000 mm): Footprint SW23
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 104.7000 mm): Footprint SW35
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(35.7000 mm, 104.7000 mm): Footprint SW34
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
     @(102.9000 mm, 97.1000 mm): Footprint SW31
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(138.9000 mm, 103.5000 mm): Footprint SW44
+    @(111.3000 mm, 89.5000 mm): Footprint SW21
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(86.1000 mm, 104.7000 mm): Footprint SW39
-[lib_footprint_issues]: Footprint 'SOT-23' not found in library 'Package_TO_SOT_SMD'.
-    Local override; Severity: warning
-    @(144.0000 mm, 75.0000 mm): Footprint U4
-[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
-    Local override; Severity: warning
-    @(77.7000 mm, 81.9000 mm): Footprint SW6
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(155.5000 mm, 78.8000 mm): Footprint C23
+    @(69.3000 mm, 81.9000 mm): Footprint SW5
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
     @(86.1000 mm, 97.1000 mm): Footprint SW29
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(149.1000 mm, 103.5000 mm): Footprint SW45
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(138.9000 mm, 103.5000 mm): Footprint SW44
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(27.0000 mm, 112.0000 mm): Footprint H1
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 89.5000 mm): Footprint SW22
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 97.1000 mm): Footprint SW30
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 89.5000 mm): Footprint SW20
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 97.1000 mm): Footprint SW32
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 104.7000 mm): Footprint SW40
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(86.1000 mm, 104.7000 mm): Footprint SW39
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 81.9000 mm): Footprint SW11
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(78.0000 mm, 59.0000 mm): Footprint R7
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 97.1000 mm): Footprint SW26
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(77.7000 mm, 81.9000 mm): Footprint SW6
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(84.0000 mm, 46.5000 mm): Footprint H5
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 81.9000 mm): Footprint SW8
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 89.5000 mm): Footprint SW19
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 89.5000 mm): Footprint SW15
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 81.9000 mm): Footprint SW2
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_NO_CK_KMR2' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(118.0000 mm, 54.0000 mm): Footprint SW100
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 104.7000 mm): Footprint SW37
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(35.7000 mm, 81.9000 mm): Footprint SW1
+[lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 97.1000 mm): Footprint SW24
+[lib_footprint_issues]: Footprint 'MountingHole_2.2mm_M2' not found in library 'MountingHole'.
+    Local override; Severity: warning
+    @(128.5000 mm, 49.0000 mm): Footprint H4
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_NO_CK_KMR2' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
     @(118.0000 mm, 48.0000 mm): Footprint SW101
 [lib_footprint_issues]: Footprint 'SW_Push_1P1T_XKB_TS-1187A' not found in library 'Button_Switch_SMD'.
     Local override; Severity: warning
-    @(111.3000 mm, 81.9000 mm): Footprint SW10
+    @(102.9000 mm, 81.9000 mm): Footprint SW9
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 97.1000 mm): Footprint D130
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 89.5000 mm): Footprint D113
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 104.7000 mm): Footprint D139
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(40.7000 mm, 89.5000 mm): Footprint D112
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(86.1000 mm, 97.1000 mm): Footprint D129
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(40.7000 mm, 81.9000 mm): Footprint D101
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(81.4000 mm, 69.4375 mm): Footprint R5
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(85.4093 mm, 66.0217 mm): Footprint C13
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 89.5000 mm): Footprint D120
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(83.5305 mm, 70.9600 mm): Footprint R3
+[lib_footprint_issues]: Footprint 'SOIC-8_5.23x5.23mm_P1.27mm' not found in library 'Package_SO'.
+    Local override; Severity: warning
+    @(82.4000 mm, 75.1875 mm): Footprint U3
+[lib_footprint_issues]: Footprint 'JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
+    Local override; Severity: warning
+    @(66.0000 mm, 47.5000 mm): Footprint J5
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(128.0000 mm, 104.2500 mm): Footprint R9
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 89.5000 mm): Footprint D122
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 97.1000 mm): Footprint D126
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(94.5000 mm, 81.9000 mm): Footprint D108
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(86.1000 mm, 81.9000 mm): Footprint D107
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(52.5000 mm, 97.1000 mm): Footprint D125
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(87.9500 mm, 68.2375 mm): Footprint C12
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 81.9000 mm): Footprint D111
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(149.1000 mm, 103.5000 mm): Footprint D144
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(77.7000 mm, 89.5000 mm): Footprint D117
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(126.3000 mm, 86.8000 mm): Footprint R21
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 81.9000 mm): Footprint D109
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 97.1000 mm): Footprint D124
+[lib_footprint_issues]: Footprint 'SOT-23-5' not found in library 'Package_TO_SOT_SMD'.
+    Local override; Severity: warning
+    @(66.0000 mm, 54.0000 mm): Footprint U2
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(82.8761 mm, 68.6202 mm): Footprint C11
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(69.9375 mm, 54.9500 mm): Footprint C2
+[lib_footprint_issues]: Footprint 'Crystal_SMD_3225-4Pin_3.2x2.5mm' not found in library 'Crystal'.
+    Local override; Severity: warning
+    @(81.3392 mm, 53.2400 mm): Footprint Y1
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 81.9000 mm): Footprint D110
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 104.7000 mm): Footprint D140
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(77.7000 mm, 97.1000 mm): Footprint D128
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(78.7977 mm, 52.1012 mm): Footprint C17
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(35.7000 mm, 104.7000 mm): Footprint D134
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(89.0000 mm, 77.0925 mm): Footprint C18
 [lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
     Local override; Severity: warning
     @(94.5000 mm, 89.5000 mm): Footprint D119
+[lib_footprint_issues]: Footprint 'QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm' not found in library 'Package_DFN_QFN'.
+    Local override; Severity: warning
+    @(84.0000 mm, 60.0000 mm): Footprint U1
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 104.7000 mm): Footprint D135
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(86.5111 mm, 70.6004 mm): Footprint R2
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(52.5000 mm, 104.7000 mm): Footprint D136
+[lib_footprint_issues]: Footprint 'D_SOD-123' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(58.0000 mm, 54.0000 mm): Footprint D1
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(86.6000 mm, 68.2375 mm): Footprint C14
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(94.6722 mm, 58.8113 mm): Footprint R11
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 89.5000 mm): Footprint D121
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 89.5000 mm): Footprint D115
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 104.7000 mm): Footprint D137
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(69.3000 mm, 81.9000 mm): Footprint D105
+[lib_footprint_issues]: Footprint 'TestPoint_Pad_D1.0mm' not found in library 'TestPoint'.
+    Local override; Severity: warning
+    @(105.0000 mm, 47.5000 mm): Footprint TP3
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(102.9000 mm, 97.1000 mm): Footprint D131
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(75.7625 mm, 59.0000 mm): Footprint C5
+[lib_footprint_issues]: Footprint 'JST_SH_SM02B-SRSS-TB_1x02-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
+    Local override; Severity: warning
+    @(128.5000 mm, 96.0000 mm): Footprint J4
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(129.5000 mm, 105.0000 mm): Footprint C19
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(119.7000 mm, 104.7000 mm): Footprint D142
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(52.5000 mm, 81.9000 mm): Footprint D103
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(87.0500 mm, 51.5625 mm): Footprint R6
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(62.0625 mm, 54.9500 mm): Footprint C1
 [lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
     Local override; Severity: warning
     @(69.3000 mm, 89.5000 mm): Footprint D116
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(69.3000 mm, 104.7000 mm): Footprint D138
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(85.6000 mm, 51.7625 mm): Footprint C10
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(92.2375 mm, 62.6000 mm): Footprint C8
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(35.7000 mm, 97.1000 mm): Footprint D123
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(84.1911 mm, 54.0317 mm): Footprint R1
+[lib_footprint_issues]: Footprint 'C_0603_1608Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(72.6875 mm, 54.9500 mm): Footprint C3
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(84.2000 mm, 68.2375 mm): Footprint C9
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(44.1000 mm, 81.9000 mm): Footprint D102
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(92.2375 mm, 59.0000 mm): Footprint C7
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(52.5000 mm, 89.5000 mm): Footprint D114
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 97.1000 mm): Footprint D132
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(111.3000 mm, 104.7000 mm): Footprint D141
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(84.9907 mm, 70.4533 mm): Footprint C15
+[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
+    Local override; Severity: warning
+    @(75.7625 mm, 62.6000 mm): Footprint C4
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(128.0000 mm, 102.0000 mm): Footprint R8
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(126.3000 mm, 88.8000 mm): Footprint R22
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(126.3000 mm, 84.8000 mm): Footprint R20
+[lib_footprint_issues]: Footprint 'JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
+    Local override; Severity: warning
+    @(77.0000 mm, 47.5000 mm): Footprint J1
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(69.3000 mm, 97.1000 mm): Footprint D127
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(86.1000 mm, 89.5000 mm): Footprint D118
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(77.7000 mm, 81.9000 mm): Footprint D106
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(138.9000 mm, 103.5000 mm): Footprint D143
+[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
+    Local override; Severity: warning
+    @(60.9000 mm, 81.9000 mm): Footprint D104
+[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
+    Local override; Severity: warning
+    @(93.9375 mm, 57.4000 mm): Footprint R10
 [lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
     Local override; Severity: warning
     @(84.2000 mm, 51.7625 mm): Footprint C6
 [lib_footprint_issues]: Footprint 'TestPoint_Pad_D1.0mm' not found in library 'TestPoint'.
     Local override; Severity: warning
     @(102.5000 mm, 47.5000 mm): Footprint TP2
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 104.7000 mm): Footprint D135
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(92.2375 mm, 62.6000 mm): Footprint C8
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 104.7000 mm): Footprint D141
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 104.7000 mm): Footprint D142
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 89.5000 mm): Footprint D114
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(75.7625 mm, 62.6000 mm): Footprint C4
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(129.5000 mm, 105.0000 mm): Footprint C19
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 81.9000 mm): Footprint D103
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 97.1000 mm): Footprint D123
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 81.9000 mm): Footprint D110
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(84.2000 mm, 68.2375 mm): Footprint C9
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(86.1000 mm, 89.5000 mm): Footprint D118
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 97.1000 mm): Footprint D131
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(77.7000 mm, 97.1000 mm): Footprint D128
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 104.7000 mm): Footprint D136
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(86.1000 mm, 97.1000 mm): Footprint D129
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(69.3000 mm, 104.7000 mm): Footprint D138
-[lib_footprint_issues]: Footprint 'C_0603_1608Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(72.6875 mm, 54.9500 mm): Footprint C3
-[lib_footprint_issues]: Footprint 'D_SOD-123' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(58.0000 mm, 54.0000 mm): Footprint D1
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(69.3000 mm, 97.1000 mm): Footprint D127
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(83.5305 mm, 70.9600 mm): Footprint R3
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(52.5000 mm, 97.1000 mm): Footprint D125
-[lib_footprint_issues]: Footprint 'TestPoint_Pad_D1.0mm' not found in library 'TestPoint'.
-    Local override; Severity: warning
-    @(105.0000 mm, 47.5000 mm): Footprint TP3
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 97.1000 mm): Footprint D130
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(87.0500 mm, 51.5625 mm): Footprint R6
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 89.5000 mm): Footprint D115
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 81.9000 mm): Footprint D104
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(82.8761 mm, 68.6202 mm): Footprint C11
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 89.5000 mm): Footprint D122
 [lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
     Local override; Severity: warning
     @(79.0404 mm, 57.3282 mm): Footprint C16
 [lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
     Local override; Severity: warning
-    @(69.3000 mm, 81.9000 mm): Footprint D105
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 89.5000 mm): Footprint D120
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(86.6000 mm, 68.2375 mm): Footprint C14
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(77.7000 mm, 89.5000 mm): Footprint D117
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(81.4000 mm, 69.4375 mm): Footprint R5
-[lib_footprint_issues]: Footprint 'Crystal_SMD_3225-4Pin_3.2x2.5mm' not found in library 'Crystal'.
-    Local override; Severity: warning
-    @(81.3392 mm, 53.2400 mm): Footprint Y1
-[lib_footprint_issues]: Footprint 'JST_SH_SM02B-SRSS-TB_1x02-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
-    Local override; Severity: warning
-    @(128.5000 mm, 96.0000 mm): Footprint J4
-[lib_footprint_issues]: Footprint 'JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
-    Local override; Severity: warning
-    @(66.0000 mm, 47.5000 mm): Footprint J5
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(35.7000 mm, 104.7000 mm): Footprint D134
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 81.9000 mm): Footprint D108
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(85.6000 mm, 51.7625 mm): Footprint C10
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(87.9500 mm, 68.2375 mm): Footprint C12
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 104.7000 mm): Footprint D140
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(40.7000 mm, 89.5000 mm): Footprint D112
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(85.4093 mm, 66.0217 mm): Footprint C13
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(84.9907 mm, 70.4533 mm): Footprint C15
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(86.5111 mm, 70.6004 mm): Footprint R2
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 97.1000 mm): Footprint D126
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 89.5000 mm): Footprint D121
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 81.9000 mm): Footprint D111
+    @(119.7000 mm, 97.1000 mm): Footprint D133
 [lib_footprint_issues]: Footprint 'TestPoint_Pad_D1.0mm' not found in library 'TestPoint'.
     Local override; Severity: warning
     @(100.0000 mm, 47.5000 mm): Footprint TP1
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(69.9375 mm, 54.9500 mm): Footprint C2
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(60.9000 mm, 104.7000 mm): Footprint D137
-[lib_footprint_issues]: Footprint 'QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm' not found in library 'Package_DFN_QFN'.
-    Local override; Severity: warning
-    @(84.0000 mm, 60.0000 mm): Footprint U1
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(94.6722 mm, 58.8113 mm): Footprint R11
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(84.1911 mm, 54.0317 mm): Footprint R1
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(77.7000 mm, 81.9000 mm): Footprint D106
-[lib_footprint_issues]: Footprint 'JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal' not found in library 'Connector_JST'.
-    Local override; Severity: warning
-    @(77.0000 mm, 47.5000 mm): Footprint J1
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(93.9375 mm, 57.4000 mm): Footprint R10
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(111.3000 mm, 97.1000 mm): Footprint D132
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(92.2375 mm, 59.0000 mm): Footprint C7
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(138.9000 mm, 103.5000 mm): Footprint D143
-[lib_footprint_issues]: Footprint 'SOIC-8_5.23x5.23mm_P1.27mm' not found in library 'Package_SO'.
-    Local override; Severity: warning
-    @(82.4000 mm, 75.1875 mm): Footprint U3
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(75.7625 mm, 59.0000 mm): Footprint C5
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(86.1000 mm, 81.9000 mm): Footprint D107
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(89.0000 mm, 77.0925 mm): Footprint C18
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 89.5000 mm): Footprint D113
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 97.1000 mm): Footprint D124
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(94.5000 mm, 104.7000 mm): Footprint D139
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(44.1000 mm, 81.9000 mm): Footprint D102
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(40.7000 mm, 81.9000 mm): Footprint D101
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(128.0000 mm, 102.0000 mm): Footprint R8
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(149.1000 mm, 103.5000 mm): Footprint D144
-[lib_footprint_issues]: Footprint 'SOT-23-5' not found in library 'Package_TO_SOT_SMD'.
-    Local override; Severity: warning
-    @(66.0000 mm, 54.0000 mm): Footprint U2
-[lib_footprint_issues]: Footprint 'R_0402_1005Metric' not found in library 'Resistor_SMD'.
-    Local override; Severity: warning
-    @(128.0000 mm, 104.2500 mm): Footprint R9
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(119.7000 mm, 97.1000 mm): Footprint D133
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(78.7977 mm, 52.1012 mm): Footprint C17
-[lib_footprint_issues]: Footprint 'C_0402_1005Metric' not found in library 'Capacitor_SMD'.
-    Local override; Severity: warning
-    @(62.0625 mm, 54.9500 mm): Footprint C1
-[lib_footprint_issues]: Footprint 'D_SOD-323' not found in library 'Diode_SMD'.
-    Local override; Severity: warning
-    @(102.9000 mm, 81.9000 mm): Footprint D109
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; Severity: warning
     @(152.5000 mm, 44.0000 mm): Line on Edge.Cuts
@@ -600,7 +567,11 @@
     @(152.5000 mm, 44.0000 mm): Line on Edge.Cuts
     @(77.0000 mm, 43.5200 mm): Reference 'J1'
 
-** Found 319 unconnected pads **
+** Found 309 unconnected pads **
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(86.2000 mm, 63.4375 mm): Pad 44 [+3V3] of U1 on B.Cu
+    @(86.6000 mm, 63.4375 mm): Pad 43 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(84.6000 mm, 63.4375 mm): Pad 48 [+3V3] of U1 on B.Cu
@@ -608,23 +579,19 @@
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(86.6000 mm, 63.4375 mm): Pad 43 [+3V3] of U1 on B.Cu
-    @(86.2000 mm, 63.4375 mm): Pad 44 [+3V3] of U1 on B.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
     @(87.4375 mm, 62.6000 mm): Pad 42 [+3V3] of U1 on B.Cu
-    @(86.6000 mm, 63.4375 mm): Pad 43 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(87.9500 mm, 68.7175 mm): Pad 1 [+3V3] of C12 on B.Cu
     @(86.6000 mm, 68.7175 mm): Pad 1 [+3V3] of C14 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(93.4275 mm, 57.4000 mm): Pad 1 [+3V3] of R10 on B.Cu
     @(94.1622 mm, 58.8113 mm): Pad 1 [+3V3] of R11 on B.Cu
+    @(93.4275 mm, 57.4000 mm): Pad 1 [+3V3] of R10 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(86.2000 mm, 63.4375 mm): Pad 44 [+3V3] of U1 on B.Cu
     @(84.6000 mm, 63.4375 mm): Pad 48 [+3V3] of U1 on B.Cu
+    @(86.2000 mm, 63.4375 mm): Pad 44 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(91.7575 mm, 59.0000 mm): Pad 1 [+3V3] of C7 on B.Cu
@@ -635,123 +602,79 @@
     @(69.4575 mm, 54.9500 mm): Pad 1 [+3V3] of C2 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(84.9907 mm, 70.9333 mm): Pad 1 [+3V3] of C15 on B.Cu
     @(84.2000 mm, 68.7175 mm): Pad 1 [+3V3] of C9 on B.Cu
+    @(84.9907 mm, 70.9333 mm): Pad 1 [+3V3] of C15 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(84.2000 mm, 68.7175 mm): Pad 1 [+3V3] of C9 on B.Cu
     @(86.6000 mm, 68.7175 mm): Pad 1 [+3V3] of C14 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(142.8000 mm, 69.5100 mm): Pad 1 [+3V3] of R20 on F.Cu
-    @(145.2000 mm, 69.4800 mm): Pad 1 [+3V3] of C20 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(142.8000 mm, 91.5100 mm): Pad 1 [+3V3] of R21 on F.Cu
-    @(145.2000 mm, 91.4800 mm): Pad 1 [+3V3] of C21 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(132.5000 mm, 81.7100 mm): Pad 1 [+3V3] of R22 on F.Cu
-    @(132.5000 mm, 79.2800 mm): Pad 1 [+3V3] of C22 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(155.5000 mm, 81.7100 mm): Pad 1 [+3V3] of R23 on F.Cu
-    @(155.5000 mm, 79.2800 mm): Pad 1 [+3V3] of C23 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(71.9125 mm, 54.9500 mm): Pad 1 [+3V3] of C3 on B.Cu
     @(69.4575 mm, 54.9500 mm): Pad 1 [+3V3] of C2 on B.Cu
+    @(71.9125 mm, 54.9500 mm): Pad 1 [+3V3] of C3 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(88.5200 mm, 77.0925 mm): Pad 1 [+3V3] of C18 on B.Cu
     @(86.0000 mm, 77.0925 mm): Pad 8 [+3V3] of U3 on B.Cu
+    @(88.5200 mm, 77.0925 mm): Pad 1 [+3V3] of C18 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(87.0500 mm, 52.0725 mm): Pad 1 [+3V3] of R6 on B.Cu
     @(84.2000 mm, 52.2425 mm): Pad 1 [+3V3] of C6 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(80.5625 mm, 59.0000 mm): Pad 10 [+3V3] of U1 on B.Cu
     @(80.5625 mm, 62.6000 mm): Pad 1 [+3V3] of U1 on B.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
-    @(87.4375 mm, 62.6000 mm): Pad 42 [+3V3] of U1 on B.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(75.2825 mm, 59.0000 mm): Pad 1 [+3V3] of C5 on B.Cu
-    @(75.2825 mm, 62.6000 mm): Pad 1 [+3V3] of C4 on B.Cu
+    @(80.5625 mm, 59.0000 mm): Pad 10 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(91.7575 mm, 59.0000 mm): Pad 1 [+3V3] of C7 on B.Cu
     @(91.7575 mm, 62.6000 mm): Pad 1 [+3V3] of C8 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
+    @(75.2825 mm, 59.0000 mm): Pad 1 [+3V3] of C5 on B.Cu
+    @(75.2825 mm, 62.6000 mm): Pad 1 [+3V3] of C4 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
+    @(87.4375 mm, 62.6000 mm): Pad 42 [+3V3] of U1 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
     @(84.2000 mm, 63.4375 mm): Pad 49 [+3V3] of U1 on B.Cu
     @(80.5625 mm, 62.6000 mm): Pad 1 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
     @(84.2000 mm, 56.5625 mm): Pad 22 [+3V3] of U1 on B.Cu
+    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
     @(91.7575 mm, 59.0000 mm): Pad 1 [+3V3] of C7 on B.Cu
+    @(87.4375 mm, 59.0000 mm): Pad 33 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(84.2000 mm, 52.2425 mm): Pad 1 [+3V3] of C6 on B.Cu
     @(84.2000 mm, 56.5625 mm): Pad 22 [+3V3] of U1 on B.Cu
+    @(84.2000 mm, 52.2425 mm): Pad 1 [+3V3] of C6 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(75.2825 mm, 59.0000 mm): Pad 1 [+3V3] of C5 on B.Cu
     @(71.9125 mm, 54.9500 mm): Pad 1 [+3V3] of C3 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(86.6000 mm, 63.4375 mm): Pad 43 [+3V3] of U1 on B.Cu
-    @(86.6000 mm, 68.7175 mm): Pad 1 [+3V3] of C14 on B.Cu
+    @(84.2000 mm, 63.4375 mm): Pad 49 [+3V3] of U1 on B.Cu
+    @(84.2000 mm, 68.7175 mm): Pad 1 [+3V3] of C9 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(75.2825 mm, 59.0000 mm): Pad 1 [+3V3] of C5 on B.Cu
     @(80.5625 mm, 59.0000 mm): Pad 10 [+3V3] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(138.0625 mm, 79.0500 mm): Pad 1 [+3V3] of U6 on F.Cu
-    @(132.5000 mm, 79.2800 mm): Pad 1 [+3V3] of C22 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(142.8000 mm, 91.5100 mm): Pad 1 [+3V3] of R21 on F.Cu
-    @(143.0500 mm, 85.9375 mm): Pad 1 [+3V3] of U5 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(143.0500 mm, 75.9375 mm): Pad 1 [+3V3] of U4 on F.Cu
-    @(138.0625 mm, 79.0500 mm): Pad 1 [+3V3] of U6 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(148.0625 mm, 79.0500 mm): Pad 1 [+3V3] of U7 on F.Cu
-    @(143.0500 mm, 75.9375 mm): Pad 1 [+3V3] of U4 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
     @(86.0000 mm, 77.0925 mm): Pad 8 [+3V3] of U3 on B.Cu
     @(84.9907 mm, 70.9333 mm): Pad 1 [+3V3] of C15 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(142.8000 mm, 69.5100 mm): Pad 1 [+3V3] of R20 on F.Cu
-    @(143.0500 mm, 75.9375 mm): Pad 1 [+3V3] of U4 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(148.0625 mm, 79.0500 mm): Pad 1 [+3V3] of U7 on F.Cu
-    @(155.5000 mm, 79.2800 mm): Pad 1 [+3V3] of C23 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(143.0500 mm, 85.9375 mm): Pad 1 [+3V3] of U5 on F.Cu
-    @(138.0625 mm, 79.0500 mm): Pad 1 [+3V3] of U6 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(67.1375 mm, 54.9500 mm): Pad 5 [+3V3] of U2 on B.Cu
     @(42.7300 mm, 51.7000 mm): PTH pad 2 [+3V3] of J2
+    @(67.1375 mm, 54.9500 mm): Pad 5 [+3V3] of U2 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(132.5000 mm, 79.2800 mm): Pad 1 [+3V3] of C22 on F.Cu
+    @(130.6000 mm, 64.3000 mm): PTH pad 1 [+3V3] of J6
     @(94.1622 mm, 58.8113 mm): Pad 1 [+3V3] of R11 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
@@ -775,8 +698,8 @@
     @(84.6000 mm, 56.5625 mm): Pad 23 [+1V1] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(83.0000 mm, 56.5625 mm): Pad 19 [GND] of U1 on B.Cu
     @(23.5000 mm, 116.0000 mm): Zone [GND] on B.Cu
+    @(83.0000 mm, 56.5625 mm): Pad 19 [GND] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(83.0000 mm, 56.5625 mm): Pad 19 [GND] of U1 on B.Cu
@@ -1411,44 +1334,36 @@
     @(87.4375 mm, 57.8000 mm): Pad 30 [I2C_SCL] of U1 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(144.9500 mm, 75.9375 mm): Pad 2 [TB_UP] of U4 on F.Cu
-    @(142.8000 mm, 68.4900 mm): Pad 2 [TB_UP] of R20 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(142.8000 mm, 68.4900 mm): Pad 2 [TB_UP] of R20 on F.Cu
     @(87.4375 mm, 58.6000 mm): Pad 32 [TB_UP] of U1 on B.Cu
+    @(130.6000 mm, 79.5400 mm): PTH pad 7 [TB_UP] of J6
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
-    @(142.8000 mm, 90.4900 mm): Pad 2 [TB_DOWN] of R21 on F.Cu
-    @(144.9500 mm, 85.9375 mm): Pad 2 [TB_DOWN] of U5 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(144.9500 mm, 85.9375 mm): Pad 2 [TB_DOWN] of U5 on F.Cu
     @(87.4375 mm, 59.4000 mm): Pad 34 [TB_DOWN] of U1 on B.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(132.5000 mm, 80.6900 mm): Pad 2 [TB_LEFT] of R22 on F.Cu
-    @(138.0625 mm, 80.9500 mm): Pad 2 [TB_LEFT] of U6 on F.Cu
+    @(130.6000 mm, 77.0000 mm): PTH pad 6 [TB_DOWN] of J6
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(87.4375 mm, 59.8000 mm): Pad 35 [TB_LEFT] of U1 on B.Cu
-    @(132.5000 mm, 80.6900 mm): Pad 2 [TB_LEFT] of R22 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(148.0625 mm, 80.9500 mm): Pad 2 [TB_RIGHT] of U7 on F.Cu
-    @(155.5000 mm, 80.6900 mm): Pad 2 [TB_RIGHT] of R23 on F.Cu
+    @(130.6000 mm, 74.4600 mm): PTH pad 5 [TB_LEFT] of J6
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(87.4375 mm, 60.2000 mm): Pad 36 [TB_RIGHT] of U1 on B.Cu
-    @(148.0625 mm, 80.9500 mm): Pad 2 [TB_RIGHT] of U7 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; Severity: error
-    @(141.9500 mm, 79.2000 mm): Pad 1 [TB_CLICK] of SW102 on F.Cu
-    @(146.0500 mm, 79.2000 mm): Pad 1 [TB_CLICK] of SW102 on F.Cu
+    @(130.6000 mm, 71.9200 mm): PTH pad 4 [TB_RIGHT] of J6
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(87.4375 mm, 61.4000 mm): Pad 39 [TB_CLICK] of U1 on B.Cu
-    @(141.9500 mm, 79.2000 mm): Pad 1 [TB_CLICK] of SW102 on F.Cu
+    @(130.6000 mm, 69.3800 mm): PTH pad 3 [TB_CLICK] of J6
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(87.4375 mm, 58.2000 mm): Pad 31 [TB_R] of U1 on B.Cu
+    @(125.7900 mm, 84.8000 mm): Pad 1 [TB_R] of R20 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(87.4375 mm, 61.8000 mm): Pad 40 [TB_G] of U1 on B.Cu
+    @(125.7900 mm, 86.8000 mm): Pad 1 [TB_G] of R21 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(87.4375 mm, 62.2000 mm): Pad 41 [TB_B] of U1 on B.Cu
+    @(125.7900 mm, 88.8000 mm): Pad 1 [TB_B] of R22 on B.Cu
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(78.0000 mm, 59.5100 mm): Pad 1 [LED] of R7 on F.Cu
@@ -1501,6 +1416,18 @@
     Local override; Severity: error
     @(58.0000 mm, 55.6500 mm): Pad 2 [VBUS_USB] of D1 on B.Cu
     @(67.5000 mm, 45.5000 mm): Pad 1 [VBUS_USB] of J5 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(126.8100 mm, 86.8000 mm): Pad 2 [TB_LED_G] of R21 on B.Cu
+    @(130.6000 mm, 84.6200 mm): PTH pad 9 [TB_LED_G] of J6
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(126.8100 mm, 84.8000 mm): Pad 2 [TB_LED_R] of R20 on B.Cu
+    @(130.6000 mm, 87.1600 mm): PTH pad 10 [TB_LED_R] of J6
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(126.8100 mm, 88.8000 mm): Pad 2 [TB_LED_B] of R22 on B.Cu
+    @(130.6000 mm, 89.7000 mm): PTH pad 11 [TB_LED_B] of J6
 [unconnected_items]: Missing connection between items
     Local override; Severity: error
     @(66.5000 mm, 45.5000 mm): Pad 2 [USB_DN] of J5 on B.Cu

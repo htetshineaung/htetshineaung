@@ -11,7 +11,7 @@ import sys
 
 import pcbnew
 
-from circuit import PARTS, BOARD, HOLES, AUTO, NO_BOTTOM_ZONE
+from circuit import PARTS, BOARD, HOLES, AUTO, NO_BOTTOM_ZONES, TB_HOLES, TB_MOD
 
 FP_DIR = next((d for d in (os.environ.get("KICAD_FP_DIR", ""), "/usr/share/kicad/footprints",
                             "/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints") if d and os.path.isdir(d)),
@@ -77,6 +77,17 @@ def build():
     seg((x1 - r, y1), (x0 + r, y1)); arc((x0 + r, y1 - r), 90)
     seg((x0, y1 - r), (x0, y0 + r)); arc((x0 + r, y0 + r), 180)
 
+    # internal cut-outs (the trackball window): rounded rectangles on Edge.Cuts
+    def carc(c, rc, a0):
+        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_ARC)
+        pts = [(c[0] + rc * math.cos(math.radians(a0 + d)), c[1] + rc * math.sin(math.radians(a0 + d))) for d in (0, 45, 90)]
+        s.SetArcGeometry(P(*pts[0]), P(*pts[1]), P(*pts[2])); s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(mm(0.1)); board.Add(s)
+    for (cx0, cy0, cx1, cy1, rc) in BOARD.get("cutouts", []):
+        seg((cx0 + rc, cy0), (cx1 - rc, cy0)); carc((cx1 - rc, cy0 + rc), rc, 270)
+        seg((cx1, cy0 + rc), (cx1, cy1 - rc)); carc((cx1 - rc, cy1 - rc), rc, 0)
+        seg((cx1 - rc, cy1), (cx0 + rc, cy1)); carc((cx0 + rc, cy1 - rc), rc, 90)
+        seg((cx0, cy1 - rc), (cx0, cy0 + rc)); carc((cx0 + rc, cy0 + rc), rc, 180)
+
     # footprints
     uuids = json.load(open("sch_uuids.json"))
     fps = {}
@@ -128,6 +139,12 @@ def build():
         fp.SetFPID(pcbnew.LIB_ID("MountingHole", "MountingHole_2.2mm_M2"))
         fp.SetReference(f"H{i + 1}"); fp.SetPosition(P(hx, hy)); fp.Reference().SetVisible(False)
         board.Add(fp)
+    # M2 holes for the trackball breakout's screws (2.5 mm spacers between the boards)
+    for i, (hx, hy) in enumerate(TB_HOLES):
+        fp = pcbnew.FootprintLoad(f"{FP_DIR}/MountingHole.pretty", "MountingHole_2.2mm_M2")
+        fp.SetFPID(pcbnew.LIB_ID("MountingHole", "MountingHole_2.2mm_M2"))
+        fp.SetReference(f"H{len(HOLES) + i + 1}"); fp.SetPosition(P(hx, hy)); fp.Reference().SetVisible(False)
+        board.Add(fp)
 
     # solid GND plane on In1; GND pours fill the spare copper on the three routing layers
     for layer, net in ((pcbnew.F_Cu, "GND"), (pcbnew.B_Cu, "GND"), (pcbnew.In1_Cu, "GND"), (pcbnew.In2_Cu, "GND")):
@@ -140,17 +157,17 @@ def build():
             ol.Append(P(x, y))
         board.Add(z)
 
-    # trackball mechanism outline on the top silkscreen (it sits on the hall sensors)
-    from circuit import TB_CX, TB_CY, TB_BODY
-    w, h = TB_BODY
-    corners = [(TB_CX - w / 2, TB_CY - h / 2), (TB_CX + w / 2, TB_CY - h / 2),
-               (TB_CX + w / 2, TB_CY + h / 2), (TB_CX - w / 2, TB_CY + h / 2)]
-    for a, b in zip(corners, corners[1:] + corners[:1]):
-        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_SEGMENT)
-        s.SetStart(P(*a)); s.SetEnd(P(*b)); s.SetLayer(pcbnew.F_SilkS); s.SetWidth(mm(0.12)); board.Add(s)
+    # trackball breakout outline (it sits under the board) on the fab layers, for assembly
+    mx0, my0, mx1, my1 = TB_MOD
+    corners = [(mx0, my0), (mx1, my0), (mx1, my1), (mx0, my1)]
+    for layer in (pcbnew.F_Fab, pcbnew.B_Fab):
+        for a, b in zip(corners, corners[1:] + corners[:1]):
+            sh = pcbnew.PCB_SHAPE(board); sh.SetShape(pcbnew.SHAPE_T_SEGMENT)
+            sh.SetStart(P(*a)); sh.SetEnd(P(*b)); sh.SetLayer(layer); sh.SetWidth(mm(0.12)); board.Add(sh)
     t = pcbnew.PCB_TEXT(board)
-    t.SetText("TRACKBALL"); t.SetPosition(P(TB_CX, TB_CY + h / 2 + 1.2)); t.SetLayer(pcbnew.F_SilkS)
-    t.SetTextSize(pcbnew.VECTOR2I(mm(0.8), mm(0.8))); t.SetTextThickness(mm(0.12)); board.Add(t)
+    t.SetText("TRACKBALL BREAKOUT UNDER THIS BOARD"); t.SetPosition(P((mx0 + mx1) / 2, my1 - 1.2))
+    t.SetLayer(pcbnew.F_Fab); t.SetTextSize(pcbnew.VECTOR2I(mm(0.8), mm(0.8))); t.SetTextThickness(mm(0.12))
+    board.Add(t)
 
     # labels
     t = pcbnew.PCB_TEXT(board)
@@ -184,9 +201,11 @@ def _inside_board(bx):
         a, c = P(n[0] - 0.5, n[3] + 0.5), P(n[2], n[1] - 0.5)
         if _hit(bx, (a.x, a.y, c.x, c.y)):
             return False
-    z = NO_BOTTOM_ZONE
-    a, c = P(z[0], z[3]), P(z[2], z[1])
-    return not _hit(bx, (a.x, a.y, c.x, c.y))
+    for z in NO_BOTTOM_ZONES:                      # Pi USB jacks, trackball breakout
+        a, c = P(z[0], z[3]), P(z[2], z[1])
+        if _hit(bx, (a.x, a.y, c.x, c.y)):
+            return False
+    return True
 
 
 def auto_place(board, fps):
@@ -209,7 +228,7 @@ def auto_place(board, fps):
         if ref == "U3":
             rot = 90 if rot == 0 else 0
         others = [_box(fps[o]) for o in placed if side_of.get(o) == side_of[ref] or fps[o].GetLayer() == fp.GetLayer()]
-        for hx, hy in HOLES:                            # M2 holes + screw head keep-out
+        for hx, hy in HOLES + TB_HOLES:                 # M2 holes + screw head keep-out
             c = P(hx, hy)
             others.append((c.x - mm(2.6), c.y - mm(2.6), c.x + mm(2.6), c.y + mm(2.6)))
         best = None
