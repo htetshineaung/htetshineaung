@@ -1,6 +1,6 @@
 """Finish the last few connections the autorouter leaves open: grid A* router on F.Cu/B.Cu.
 
-    python fix_route.py <board.kicad_pcb> <out.kicad_pcb> REF.PAD [REF.PAD ...] [--lock] [--dsn] [--rip MM]
+    python fix_route.py <board.kicad_pcb> <out.kicad_pcb> REF.PAD [REF.PAD ...] [--lock] [--dsn] [--rip MM] [--inner] [--net NAME ...]
 
 --rip MM first deletes unlocked tracks of other nets within MM of the pad, then routes the pad,
 then reconnects every net it ripped up.
@@ -15,7 +15,8 @@ import sys
 
 import pcbnew
 
-args = [a for a in sys.argv[1:] if not a.startswith("--")]
+NETS = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--net"]   # --net NAME: reconnect a whole net
+args = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and sys.argv[i - 1] != "--net"]
 LOCK = "--lock" in sys.argv          # lock what we add (run before the autorouter)
 src, dst, targets = args[0], args[1], args[2:]
 board = pcbnew.LoadBoard(src)
@@ -208,14 +209,14 @@ def route(ref, num):
 
     six, siy, sli = round((sx - box[0]) / G), round((sy - box[1]) / G), LAYERS.index(slayer)
     # start from every point of the copper already joined to the pad (pad, its stubs, its vias)
-    starts = {(six, siy, sli)}
+    starts, exact = {(six, siy, sli)}, {}
     for li_, ly in enumerate(LAYERS):
         for it in tgt[ly]:
             if key(it[2]) in own:
                 for (x, y) in points(it):
                     jx, jy = round((x - box[0]) / G), round((y - box[1]) / G)
                     if 0 <= jx < nx and 0 <= jy < ny:
-                        starts.add((jx, jy, li_))
+                        starts.add((jx, jy, li_)); exact.setdefault((jx, jy, li_), (x, y))
     openq = [(0, 0, st, None) for st in starts]
     came, gbest = {}, {st: 0 for st in starts}
     moves = [(1, 0, 1), (-1, 0, 1), (0, 1, 1), (0, -1, 1), (1, 1, 1.414), (1, -1, 1.414), (-1, 1, 1.414), (-1, -1, 1.414)]
@@ -259,6 +260,15 @@ def route(ref, num):
     pts = [(box[0] + p[0] * G, box[1] + p[1] * G, p[2]) for p in path]
     if path[0][:2] == (six, siy):
         pts[0] = (sx, sy, pts[0][2])
+    elif path[0] in exact:                  # began on a track end or via: start exactly there, not on the grid
+        pts[0] = (*exact[path[0]], pts[0][2])
+    # the goal test uses a pad's bounding box, whose corners are off the copper of a round pad:
+    # finish at the pad centre
+    ex, ey, el = pts[-1]
+    hit = [it for it in goals[LAYERS[el]] if dist_to(it, ex, ey) <= 0.0]
+    if hit and hit[0][0] == "r":
+        c = hit[0][2].GetPosition()
+        pts.append((T(c.x), T(c.y), el))
 
     def free_xy(x, y, li):
         if not all(dist_to(e, x, y) > TW / 2 + 0.3 for e in eidx.near(x, y)):
@@ -359,6 +369,9 @@ for spec in targets:
     for nc in ripped:
         name = board.GetNetInfo().GetNetItem(nc).GetNetname()
         print("  reconnect", name, "->", "ok" if reconnect(nc) else "FAILED")
+for name in NETS:
+    ni = board.FindNet(name)
+    print("reconnect", name, "->", "ok" if ni and reconnect(ni.GetNetCode()) else "FAILED")
 board.Save(dst)
 if "--dsn" in sys.argv:                 # also write a Specctra file for the autorouter
     b2 = pcbnew.LoadBoard(dst)

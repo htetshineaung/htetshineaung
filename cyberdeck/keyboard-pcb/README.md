@@ -1,7 +1,8 @@
 # Clamshell keyboard PCB (phase 2)
 
 Our own thumb keyboard for the Pi 5 Clamshell: RP2040, 42 keys + mouse L/R (45 switches: the space bar has two) on 1.5 mm tactile
-switches, a built-in hall-effect trackball, OLED pads, battery voltage sense. 4-layer (In1 solid GND plane,
+switches, a BlackBerry-style trackball breakout under a window in the board, OLED pads, battery voltage
+sense. 4-layer (In1 solid GND plane,
 In2 extra routing layer), 1.0 mm, 133 × 72 mm,
 shaped to drop into the clamshell base under the deck.
 
@@ -12,7 +13,8 @@ shaped to drop into the clamshell base under the deck.
 | `gen_pcb.py` → `clam_kbd.kicad_pcb`, `clam_kbd.dsn` | Placed PCB with nets, outline, GND pours; Specctra file for the autorouter |
 | `verify_netlist.py` | Checks KiCad's exported netlist against `circuit.py`, pin by pin |
 | `run_drc.py` | KiCad DRC through the pcbnew API |
-| `gen_fab.py` → `fab/bom.csv`, `fab/cpl.csv` | JLCPCB assembly files |
+| `gen_fab.py` → `fab/bom.csv`, `fab/cpl.csv` | JLCPCB assembly files (placements from `fab/routed_positions.csv`, the routed board's export) |
+| `apply_tb_module.py`, `cluster_route.py`, `trim_dangling.py`, `tb_pipeline.sh` | Turn the routed rev A board into rev B (trackball breakout) without re-routing everything |
 | `render/` | Top / bottom renders, schematic PDF |
 
 ```bash
@@ -43,12 +45,19 @@ KICAD7_FOOTPRINT_DIR=/usr/share/kicad/footprints /usr/bin/python3 gen_pcb.py
   Rules (`clam_kbd_rN.kicad_pro`): 0.15 mm track and clearance, 0.5/0.3 mm vias, 0.3 mm to the
   edge; all within JLCPCB's standard 4-layer process (the router's few 0.09 mm neck-downs at the
   RP2040 pins are inside JLCPCB's 0.09 mm multilayer limit).
-- **Trackball (on this board):** a 4-roller hall-effect mechanism (BlackBerry-style, the same kind
-  the Pimoroni trackball uses, ~12 × 12 mm) sits on the top side at (124, 40). Four DRV5033
-  omnipolar hall switches U4–U7 sit under the roller magnets (10 kΩ pull-ups R20–R23, 100 nF
-  C20–C23) and go straight to the RP2040 (GPIO21–24 = up/down/left/right); KMR2 switch SW102
-  under the ball is the click (GPIO27). **Measure your mechanism** and set `TB_HALL` / `TB_BODY`
-  in `circuit.py` so each sensor sits right under its roller's magnet.
+- **Trackball (rev B):** the ready-made BlackBerry-style trackball breakout (pins VCC GND BTN RHT
+  LFT DWN UP WHT GRN RED BLU) sits *under* the board: its own 11-pin header is soldered through J6
+  (plated holes, both boards), two M2 screws with 2.5 mm spacers (H6, H7) hold its other edge, and
+  the ball comes up through a 14 × 14 mm window centred at (124, 44). The module's hall outputs and
+  click go straight to the RP2040 (GPIO21–24 up/down/left/right, GPIO27 click); its RGB LED goes
+  through 100 Ω R20–R22 to GPIO20/28/29 (works whichever way the module's LED is wired: the
+  firmware picks the polarity). WHT is not connected. The module runs from +3V3.
+- **Rev B routing** (`tb_pipeline.sh`, on the Mac with KiCad 10): `apply_tb_module.py` removes the
+  rev A hall sensors and their tracks, adds J6 / R20–R22 / H6–H7 / the window and clears copper they
+  clash with (pad nets are checked against the generated board by hash); `fix_route.py` routes the
+  new connections; `cluster_route.py` redoes the RP2040's right-side fan-out (pins 34–41 all need
+  an escape now), trying routing orders until every pin gets out; `trim_dangling.py` cuts the
+  stubs left over. Result: 0 unconnected, 0 DRC errors.
 
 ## Circuit
 - **MCU:** RP2040 + W25Q16JVSSIQ 2 MB QSPI flash, 12 MHz ABM8-272-T3 crystal (15 pF, 1 kΩ on
@@ -75,7 +84,12 @@ KICAD7_FOOTPRINT_DIR=/usr/share/kicad/footprints /usr/bin/python3 gen_pcb.py
 | GPIO0 / 1 | UART0 TX / RX → Pi | GPIO18 / 19 | I²C1 SDA / SCL |
 | GPIO2–5 | ROW0–3 | GPIO21–24, 27 | trackball up/down/left/right, click |
 | GPIO6–17 | COL0–11 | GPIO25 | status LED |
-| GPIO26 | battery sense (ADC0) | GPIO21–24, 27–29 | spare |
+| GPIO26 | battery sense (ADC0) | GPIO20 / 28 / 29 | trackball LED red / green / blue |
+
+| J6 pin | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Breakout | VCC | GND | BTN | RHT | LFT | DWN | UP | WHT | GRN | RED | BLU |
+| Net | +3V3 | GND | TB_CLICK | TB_RIGHT | TB_LEFT | TB_DOWN | TB_UP | — | TB_LED_G | TB_LED_R | TB_LED_B |
 
 ## Before ordering
 - Route, then re-run DRC and the netlist check.

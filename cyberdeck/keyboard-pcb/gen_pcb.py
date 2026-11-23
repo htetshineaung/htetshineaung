@@ -106,8 +106,11 @@ def build():
             if p[k.lower()]:
                 try:
                     fp.SetProperty(k, p[k.lower()])
-                except AttributeError:                  # KiCad 8+
+                except AttributeError:                  # KiCad 8+: a field, which must not print on the silkscreen
                     fp.SetField(k, p[k.lower()])
+                    for f in fp.GetFields():
+                        if f.GetName() == k:
+                            f.SetVisible(False)
         board.Add(fp)                                   # must be on the board before Flip()
         fps[p["ref"]] = fp
         fp.SetPosition(P(*p["pos"]))
